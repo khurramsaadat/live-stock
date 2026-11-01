@@ -51,3 +51,6 @@ next-env.d.ts
 # local dev logs
 *.log
 .devserver.pid
+
+# keep the environment template in version control
+!.env.example

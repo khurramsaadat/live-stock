@@ -147,9 +147,28 @@ Not adopted, with reasons recorded in the analysis: drag to reorder, multiple
 watchlists, column customization, volume and fundamentals, extended hours data,
 news and alerts, accounts, and sector heatmaps.
 
-## Tests and releases
+## Tests
 
-Testing and the updater pipeline arrive in Milestones 4 and 5.
+```powershell
+npm run test
+npm run typecheck
+npm run lint
+```
+
+Build the desktop binary and drive it with WebdriverIO:
+
+```powershell
+npm run e2e:build
+npm run test:e2e
+```
+
+The Vitest suite covers the feed adapters, session clock, formatting, watchlist
+store and every market component. The E2E suite launches the compiled
+executable through tauri-driver and a matching Edge driver. Details, results and
+troubleshooting live in [markdown/testing.md](markdown/testing.md).
+
+The auto updater and the GitHub Actions release pipeline arrive in Milestone 5.
+No signing key exists yet.
 
 ## Design language
 

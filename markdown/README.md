@@ -9,6 +9,7 @@ can read the one you need without the rest.
 | [design-system.md](design-system.md) | Change the look, add a component, or check a colour and type rule |
 | [data-layer.md](data-layer.md) | Connect a real market data provider, or change how quotes are derived |
 | [testing.md](testing.md) | Run tests, add a test, or fix a failing desktop E2E session |
+| [live-data-setup.md](live-data-setup.md) | Replace the mock feed with a real provider, and see what is needed from you |
 | [desktop.md](desktop.md) | Work on the Tauri shell, window settings, CSP, and packaging |
 | [decisions.md](decisions.md) | Find out why something is the way it is before changing it |
 | [competitive-analysis.md](competitive-analysis.md) | Compare features against Yahoo Finance, MarketWatch, Google Finance, Bloomberg and TradingView |
