@@ -229,9 +229,9 @@ export function Landing({ onLaunch }: LandingProps) {
         {/* Markets */}
         <section id="markets" className="relative border-t border-border bg-panel py-24 overflow-hidden">
           <div
-            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            className="pointer-events-none absolute inset-0 opacity-[0.15]"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=60&auto=format')",
+              backgroundImage: "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&q=75&auto=format')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -423,9 +423,9 @@ export function Landing({ onLaunch }: LandingProps) {
         {/* CTA */}
         <section className="relative border-t border-border bg-panel py-24 overflow-hidden">
           <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&q=60&auto=format')",
+              backgroundImage: "url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1400&q=75&auto=format')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
