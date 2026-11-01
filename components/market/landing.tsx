@@ -99,9 +99,10 @@ export function Landing({ onLaunch }: LandingProps) {
                 Launch Dashboard
               </button>
               <a
-                href="https://github.com/khurramsaadat/live-stocks/releases/latest"
+                href="https://github.com/khurramsaadat/live-stock/releases/download/v0.1.0/Live.Stocks_0.1.0_x64-setup.exe"
                 target="_blank"
                 rel="noopener noreferrer"
+                download
                 className="group flex items-center gap-2.5 rounded-full bg-accent/15 border border-accent/30 px-6 py-3.5 text-base font-semibold text-accent transition-all hover:bg-accent/25 hover:shadow-lg hover:shadow-accent/10"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-y-0.5">
