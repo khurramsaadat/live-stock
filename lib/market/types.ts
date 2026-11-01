@@ -18,6 +18,11 @@ export interface FeedUpdate {
   price: number;
   /** Epoch milliseconds. */
   at: number;
+  /**
+   * Previous close for the session, when the provider reports it. The quote
+   * falls back to the baseline in the symbol universe otherwise.
+   */
+  previousClose?: number;
 }
 
 export interface FeedHandler {

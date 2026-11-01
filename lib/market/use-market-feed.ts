@@ -14,14 +14,21 @@ interface FeedState {
   prices: Record<string, number>;
   history: Record<string, number[]>;
   updatedAt: Record<string, number | null>;
+  /** Provider-reported previous close, when available. */
+  previousClose: Record<string, number>;
 }
 
-const emptyState: FeedState = { prices: {}, history: {}, updatedAt: {} };
+const emptyState: FeedState = {
+  prices: {},
+  history: {},
+  updatedAt: {},
+  previousClose: {},
+};
 
 /**
  * Connects one feed for the requested symbols and turns incremental price
- * updates into render ready quotes. The feed is rebuilt only when the symbol
- * set itself changes.
+ * updates into render-ready quotes. Uses the provider's previousClose when
+ * available (e.g. Finnhub's `pc` field) for accurate change calculations.
  */
 export function useMarketFeed(symbols: MarketSymbol[]) {
   const symbolKey = symbols.map((entry) => entry.symbol).join(",");
@@ -53,11 +60,19 @@ export function useMarketFeed(symbols: MarketSymbol[]) {
         setState((previous) => {
           const history = previous.history[update.symbol] ?? [];
           const nextHistory = [...history, update.price].slice(-HISTORY_LENGTH);
-          return {
+          const nextState: FeedState = {
             prices: { ...previous.prices, [update.symbol]: update.price },
             history: { ...previous.history, [update.symbol]: nextHistory },
             updatedAt: { ...previous.updatedAt, [update.symbol]: update.at },
+            previousClose: previous.previousClose ?? {},
           };
+          if (update.previousClose !== undefined) {
+            nextState.previousClose = {
+              ...(previous.previousClose ?? {}),
+              [update.symbol]: update.previousClose,
+            };
+          }
+          return nextState;
         });
       },
       onStatus: (nextStatus, nextDetail) => {
@@ -73,15 +88,16 @@ export function useMarketFeed(symbols: MarketSymbol[]) {
     () =>
       symbols.map((entry) => {
         const price = state.prices[entry.symbol] ?? entry.previousClose;
-        const change = price - entry.previousClose;
+        const prevClose = state.previousClose?.[entry.symbol] ?? entry.previousClose;
+        const change = price - prevClose;
         return {
           symbol: entry.symbol,
           name: entry.name,
           kind: entry.kind,
           price,
-          previousClose: entry.previousClose,
+          previousClose: prevClose,
           change,
-          changePercent: entry.previousClose === 0 ? 0 : (change / entry.previousClose) * 100,
+          changePercent: prevClose === 0 ? 0 : (change / prevClose) * 100,
           history: state.history[entry.symbol] ?? [],
           updatedAt: state.updatedAt[entry.symbol] ?? null,
         };

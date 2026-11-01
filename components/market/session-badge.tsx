@@ -4,9 +4,9 @@ import { getSessionInfo, type SessionState } from "@/lib/market/session";
 import { useNow } from "@/lib/market/use-now";
 
 const dotTone: Record<SessionState, string> = {
-  open: "bg-emerald live-dot",
-  pre: "bg-amber",
-  after: "bg-amber",
+  open: "bg-gain live-dot",
+  pre: "bg-accent",
+  after: "bg-accent",
   closed: "bg-ink-muted",
 };
 
@@ -17,12 +17,12 @@ export function SessionBadge() {
 
   return (
     <span
-      className="inline-flex items-center gap-2.5"
+      className="inline-flex items-center gap-2"
       data-testid="session-badge"
       data-state={state}
     >
       <span aria-hidden className={`size-[6px] rounded-full ${dotTone[state]}`} />
-      <span className="font-mono text-3xs uppercase tracking-[0.16em] text-ink-soft">
+      <span className="font-mono text-3xs uppercase tracking-[0.14em] text-ink-muted">
         {info?.label ?? "Session"}
       </span>
       <span className="sr-only">US market session</span>

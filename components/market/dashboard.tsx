@@ -12,25 +12,37 @@ import { PulseRail } from "./pulse-rail";
 import { SessionBadge } from "./session-badge";
 import { SessionClock } from "./session-clock";
 import { StatusPill } from "./status-pill";
+import { TabNav, type TabId } from "./tab-nav";
+import { TickerTape } from "./ticker-tape";
 import { WatchlistTable } from "./watchlist-table";
+import { Heatmap } from "./heatmap";
+import { ChartView } from "./chart-view";
 
 const reveal = (delay: number): CSSProperties =>
   ({ "--reveal-delay": `${delay}ms` }) as CSSProperties;
 
 export function Dashboard() {
   const watchlist = useWatchlist();
-  const [theme, setTheme] = useState<'day' | 'dark'>('day');
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'day' ? 'dark' : 'day'));
-    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'day');
-  };
-  // persist theme in localStorage across sessions
+  const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
   useEffect(() => {
-    const stored = localStorage.getItem('theme');
-    if (stored) {
-      document.documentElement.setAttribute('data-theme', stored);
+    const stored = localStorage.getItem("ls-theme") as "dark" | "light" | null;
+    if (stored === "dark" || stored === "light") {
+      setTheme(stored);
+      document.documentElement.setAttribute("data-theme", stored);
     }
   }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("ls-theme", next);
+      return next;
+    });
+  };
+
   const tracked = useMemo<MarketSymbol[]>(() => {
     const watchSymbols = watchlist.symbols
       .map((symbol) => findSymbol(symbol))
@@ -40,124 +52,250 @@ export function Dashboard() {
 
   const { quotes, status, detail, feedKind, lastUpdated } = useMarketFeed(tracked);
 
-  const indexQuotes = quotes.filter((quote) => quote.kind === "index");
-  const watchQuotes = quotes.filter((quote) => quote.kind === "equity");
+  const indexQuotes = quotes.filter((q) => q.kind === "index");
+  const watchQuotes = quotes.filter((q) => q.kind === "equity");
+  const allQuotes = [...indexQuotes, ...watchQuotes];
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
-      <header
-        className="reveal flex flex-wrap items-center justify-between gap-6 px-8 pb-5 pt-7 sm:px-12"
-        style={reveal(0)}
-      >
-        <div className="flex items-center gap-3.5">
-          <span aria-hidden className="mt-1 size-[7px] self-start bg-amber" />
-          <div>
-            <p className="font-serif text-[1.65rem] leading-none tracking-[-0.015em]">
+    <div className="flex min-h-screen flex-col bg-ground">
+      {/* Ticker Tape */}
+      <TickerTape quotes={allQuotes} />
+
+      {/* Header */}
+      <header className="flex items-center justify-between gap-4 px-6 py-3 sm:px-8">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2.5">
+            <span
+              aria-hidden
+              className="size-2 rounded-full bg-accent"
+            />
+            <span className="font-serif text-lg leading-none tracking-tight text-ink">
               Live Stocks
-            </p>
-            <p className="eyebrow mt-2">Market desk</p>
+            </span>
           </div>
+          <TabNav active={activeTab} onChange={setActiveTab} />
         </div>
 
-        <div className="flex items-center gap-5">
-          <div className="hidden flex-col items-end gap-1.5 sm:flex">
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-3 sm:flex">
             <SessionClock variant="date" />
+            <span aria-hidden className="h-4 w-px bg-border" />
             <SessionClock variant="time" />
           </div>
-          <span aria-hidden className="hidden h-7 w-px bg-rule sm:block" />
+          <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
           <SessionBadge />
+          <StatusPill status={status} detail={detail} />
           <button
             type="button"
             onClick={toggleTheme}
-            className="rounded-md bg-amber/10 px-2 py-0.5 text-2xs text-amber hover:bg-amber focus-visible:bg-amber focus-visible:text-ink disabled:opacity-40 transition-colors duration-150"
-            aria-label={theme === 'day' ? 'Switch to day theme' : 'Switch to dark theme'}
-            title={theme === 'day' ? 'Switch to day theme' : 'Switch to dark theme'}
+            className="flex size-8 items-center justify-center rounded-full bg-panel-raised text-ink-muted transition-colors duration-150 hover:bg-accent hover:text-ground"
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
           >
-            {theme === 'day' ? '☀' : '☽'}
+            {theme === "dark" ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            )}
           </button>
-          <span aria-hidden className="h-7 w-px bg-rule" />
-          <StatusPill status={status} detail={detail} />
         </div>
       </header>
 
-      <div className="px-8 sm:px-12" aria-hidden>
-        <div className="h-px bg-rule-strong" />
-        <div className="mt-[3px] h-px bg-rule" />
-      </div>
+      <div aria-hidden className="h-px bg-border" />
 
-      <main className="flex-1 px-8 pb-12 pt-9 sm:px-12">
-        <section aria-labelledby="indices-heading" className="reveal" style={reveal(90)}>
-          <div className="flex items-baseline justify-between gap-4">
-            <h1 id="indices-heading" className="font-serif text-xl italic">
-              Indices
-            </h1>
-            <span className="eyebrow">Session move</span>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-px border-y border-rule bg-rule sm:grid-cols-2">
-            {indexQuotes.map((quote) => (
-              <IndexCard key={quote.symbol} quote={quote} />
-            ))}
-          </div>
-        </section>
-
-        <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-14">
-          <section
-            aria-labelledby="watchlist-heading"
-            className="reveal min-w-0"
-            style={reveal(170)}
-          >
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="flex items-baseline gap-3">
-                <h2 id="watchlist-heading" className="font-serif text-xl italic">
-                  Watchlist
-                </h2>
-                <span className="tabular text-3xs text-ink-muted">
-                  {watchQuotes.length} tracked
-                </span>
-              </div>
-
-              <AddSymbol available={watchlist.available} onAdd={watchlist.add} />
-            </div>
-
-            <div className="mt-5">
-              <WatchlistTable quotes={watchQuotes} onRemove={watchlist.remove} />
-            </div>
-
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={watchlist.reset}
-                className="font-mono text-3xs uppercase tracking-[0.16em] text-ink-muted transition-colors duration-200 hover:text-amber"
-              >
-                Reset to default
-              </button>
-              <p className="tabular text-3xs text-ink-muted">
-                Updated {formatClock(lastUpdated)}
-              </p>
-            </div>
-          </section>
-
-          <PulseRail
-            quotes={watchQuotes}
+      {/* Tab Content */}
+      <main className="flex-1">
+        {activeTab === "dashboard" && (
+          <DashboardTab
+            indexQuotes={indexQuotes}
+            watchQuotes={watchQuotes}
             feedKind={feedKind}
             status={status}
             detail={detail}
             lastUpdated={lastUpdated}
-            className="reveal"
           />
-        </div>
+        )}
+
+        {activeTab === "watchlist" && (
+          <WatchlistTab
+            watchQuotes={watchQuotes}
+            watchlist={watchlist}
+            feedKind={feedKind}
+            lastUpdated={lastUpdated}
+          />
+        )}
+
+        {activeTab === "heatmap" && (
+          <div className="p-6 sm:p-8">
+            <Heatmap quotes={watchQuotes.filter((q) => q.updatedAt !== null)} />
+          </div>
+        )}
+
+        {activeTab === "charts" && (
+          <div className="p-6 sm:p-8">
+            <ChartView quotes={watchQuotes.filter((q) => q.updatedAt !== null)} />
+          </div>
+        )}
       </main>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-8 py-4 sm:px-12">
+      {/* Footer */}
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-3 sm:px-8">
         <span className="eyebrow">
-          {feedKind === "mock"
-            ? "Simulated data · not investment advice"
-            : `${feedKind} stream · not investment advice`}
+          {feedKind} stream - not investment advice
         </span>
-        <span className="eyebrow">{theme === 'day' ? 'Daylight' : 'Dark'} theme</span>
-        <span className="tabular text-3xs text-ink-muted">v0.1.0</span>
+        <span className="tabular text-3xs text-ink-muted">
+          Updated {formatClock(lastUpdated)}
+        </span>
       </footer>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dashboard Tab                                                      */
+/* ------------------------------------------------------------------ */
+
+import type { FeedStatus, Quote } from "@/lib/market/types";
+
+function DashboardTab({
+  indexQuotes,
+  watchQuotes,
+  feedKind,
+  status,
+  detail,
+  lastUpdated,
+}: {
+  indexQuotes: Quote[];
+  watchQuotes: Quote[];
+  feedKind: string;
+  status: FeedStatus;
+  detail?: string;
+  lastUpdated: number | null;
+}) {
+  return (
+    <div className="p-6 sm:p-8">
+      {/* Indices */}
+      <section className="reveal" style={reveal(0)}>
+        <h1 className="font-serif text-xl italic text-ink">Indices</h1>
+        <div className="mt-4 grid grid-cols-1 gap-px rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {indexQuotes.map((q) => (
+            <IndexCard key={q.symbol} quote={q} />
+          ))}
+        </div>
+      </section>
+
+      {/* Bottom grid */}
+      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_280px]">
+        {/* Top movers */}
+        <section className="reveal" style={reveal(80)}>
+          <h2 className="font-serif text-xl italic text-ink">Top movers</h2>
+          <div className="mt-4 grid gap-px rounded-card border border-border bg-border sm:grid-cols-2">
+            <MoverList title="Leaders" quotes={watchQuotes.filter((q) => q.change > 0).sort((a, b) => b.changePercent - a.changePercent).slice(0, 5)} />
+            <MoverList title="Laggards" quotes={watchQuotes.filter((q) => q.change < 0).sort((a, b) => a.changePercent - b.changePercent).slice(0, 5)} />
+          </div>
+        </section>
+
+        {/* Pulse rail */}
+        <PulseRail
+          quotes={watchQuotes}
+          feedKind={feedKind}
+          status={status}
+          detail={detail}
+          lastUpdated={lastUpdated}
+          className="reveal"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mover List                                                         */
+/* ------------------------------------------------------------------ */
+
+import { formatPercent, formatPrice } from "@/lib/market/format";
+import { changeTone } from "./tone";
+
+function MoverList({ title, quotes }: { title: string; quotes: Quote[] }) {
+  return (
+    <div className="bg-panel p-5">
+      <p className="eyebrow">{title}</p>
+      {quotes.length === 0 ? (
+        <p className="mt-3 text-[0.78rem] text-ink-muted">No movers yet.</p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {quotes.map((q) => (
+            <li key={q.symbol} className="flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-2">
+                <span className="tabular text-[0.8rem] font-medium">{q.symbol}</span>
+                <span className="tabular text-[0.75rem] text-ink-muted">{formatPrice(q.price)}</span>
+              </div>
+              <span className={`tabular text-[0.8rem] font-medium ${changeTone(q.change)}`}>
+                {formatPercent(q.changePercent)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Watchlist Tab                                                      */
+/* ------------------------------------------------------------------ */
+
+function WatchlistTab({
+  watchQuotes,
+  watchlist,
+  feedKind,
+  lastUpdated,
+}: {
+  watchQuotes: Quote[];
+  watchlist: ReturnType<typeof useWatchlist>;
+  feedKind: string;
+  lastUpdated: number | null;
+}) {
+  return (
+    <div className="p-6 sm:p-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex items-baseline gap-3">
+          <h1 className="font-serif text-xl italic text-ink">Watchlist</h1>
+          <span className="tabular text-3xs text-ink-muted">
+            {watchQuotes.length} tracked
+          </span>
+        </div>
+        <AddSymbol available={watchlist.available} onAdd={watchlist.add} />
+      </div>
+
+      <div className="mt-5">
+        <WatchlistTable quotes={watchQuotes} onRemove={watchlist.remove} />
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={watchlist.reset}
+          className="rounded-full border border-border px-3 py-1 font-mono text-3xs uppercase tracking-[0.14em] text-ink-muted transition-colors duration-200 hover:border-accent hover:text-accent"
+        >
+          Reset to default
+        </button>
+        <p className="tabular text-3xs text-ink-muted">
+          Updated {formatClock(lastUpdated)}
+        </p>
+      </div>
     </div>
   );
 }

@@ -10,20 +10,20 @@ const labels: Record<FeedStatus, string> = {
 
 const dotTone: Record<FeedStatus, string> = {
   idle: "bg-ink-muted",
-  connecting: "bg-amber",
-  live: "bg-emerald live-dot",
-  stalled: "bg-amber",
-  error: "bg-rust",
+  connecting: "bg-accent",
+  live: "bg-gain live-dot",
+  stalled: "bg-accent",
+  error: "bg-loss",
 };
 
 export function StatusPill({ status, detail }: { status: FeedStatus; detail?: string }) {
   return (
-    <span className="inline-flex items-center gap-2.5" data-status={status}>
+    <span className="inline-flex items-center gap-2" data-status={status}>
       <span
         aria-hidden
         className={`size-[6px] rounded-full ${dotTone[status]}`}
       />
-      <span className="font-mono text-3xs uppercase tracking-[0.16em] text-ink-soft">
+      <span className="font-mono text-3xs uppercase tracking-[0.14em] text-ink-muted">
         {labels[status]}
       </span>
       <span className="sr-only">

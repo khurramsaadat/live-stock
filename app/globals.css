@@ -1,28 +1,33 @@
 @import "tailwindcss";
 
-/* Light theme defaults. Dark theme overrides are defined via [data-theme="dark"] below. The palette uses warm neutrals with amber and emerald accents; no blue, indigo, or purple hues. */
+/*
+ * Live Stocks - Robinhood-inspired design system
+ * Dark-first, chartreuse accent, serif headlines, tabular mono numbers
+ */
 @theme {
-  --color-paper: #f5f3ef;
-  --color-paper-raised: #fbfaf7;
-  --color-paper-sunken: #efece6;
-  --color-ink: #16150f;
-  --color-ink-soft: #4b483f;
-  --color-ink-muted: #6b6658;
-  --color-rule: #e0dbd1;
-  --color-rule-strong: #cbc4b6;
-  --color-amber: #9a5a08;
-  --color-amber-quiet: #f2e4ca;
-  --color-emerald: #0d6647;
-  --color-emerald-quiet: #dcefe2;
-  --color-rust: #97381c;
-  --color-rust-quiet: #f3ded4;
+  --color-ground: var(--ls-ground);
+  --color-panel: var(--ls-panel);
+  --color-panel-raised: var(--ls-panel-raised);
+  --color-panel-sunken: var(--ls-panel-sunken);
+  --color-ink: var(--ls-ink);
+  --color-ink-secondary: var(--ls-ink-secondary);
+  --color-ink-muted: var(--ls-ink-muted);
+  --color-border: var(--ls-border);
+  --color-border-strong: var(--ls-border-strong);
+  --color-accent: var(--ls-accent);
+  --color-accent-dim: var(--ls-accent-dim);
+  --color-gain: var(--ls-gain);
+  --color-gain-bg: var(--ls-gain-bg);
+  --color-loss: var(--ls-loss);
+  --color-loss-bg: var(--ls-loss-bg);
 
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
-  --radius-tight: 2px;
-  --radius-panel: 6px;
+  --radius-pill: 999px;
+  --radius-card: 8px;
+  --radius-sm: 4px;
 
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
@@ -31,14 +36,51 @@
 }
 
 @layer base {
-  :root {
-    color-scheme: light dark;
+  /* Dark mode (default) */
+  :root,
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --ls-ground: #000000;
+    --ls-panel: #141414;
+    --ls-panel-raised: #1E1E1E;
+    --ls-panel-sunken: #0A0A0A;
+    --ls-ink: #FFFFFF;
+    --ls-ink-secondary: #BFBFBF;
+    --ls-ink-muted: #808080;
+    --ls-border: #2A2A2A;
+    --ls-border-strong: #3A3A3A;
+    --ls-accent: #CCFF00;
+    --ls-accent-dim: rgba(204, 255, 0, 0.12);
+    --ls-gain: #00C805;
+    --ls-gain-bg: rgba(0, 200, 5, 0.12);
+    --ls-loss: #FF5000;
+    --ls-loss-bg: rgba(255, 80, 0, 0.12);
+  }
+
+  /* Light mode */
+  [data-theme="light"] {
+    color-scheme: light;
+    --ls-ground: #F5F5F5;
+    --ls-panel: #FFFFFF;
+    --ls-panel-raised: #EBEBEB;
+    --ls-panel-sunken: #E0E0E0;
+    --ls-ink: #1A1A1A;
+    --ls-ink-secondary: #4A4A4A;
+    --ls-ink-muted: #808080;
+    --ls-border: #E0E0E0;
+    --ls-border-strong: #CCCCCC;
+    --ls-accent: #7CB305;
+    --ls-accent-dim: rgba(124, 179, 5, 0.1);
+    --ls-gain: #00873C;
+    --ls-gain-bg: rgba(0, 135, 60, 0.08);
+    --ls-loss: #D32F2F;
+    --ls-loss-bg: rgba(211, 47, 47, 0.08);
   }
 
   html,
   body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    background-color: var(--ls-ground);
+    color: var(--ls-ink);
     font-family: var(--font-sans);
     font-feature-settings: "ss01" 1, "cv05" 1;
     text-rendering: optimizeLegibility;
@@ -49,44 +91,37 @@
   }
 
   ::selection {
-    background-color: var(--color-amber-quiet);
-    color: var(--color-ink);
+    background-color: var(--ls-accent);
+    color: var(--ls-ground);
   }
 
   :focus-visible {
-    outline: 1px solid var(--color-amber);
+    outline: 1.5px solid var(--ls-accent);
     outline-offset: 2px;
   }
 
-  /* Custom 4px scrollbars, transparent track, everywhere. */
+  /* 4px scrollbar */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(22 21 15 / 0.28) transparent;
+    scrollbar-color: rgba(255 255 255 / 0.12) transparent;
+  }
+  *::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background-color: rgba(255 255 255 / 0.12); border-radius: 999px; }
+  *::-webkit-scrollbar-thumb:hover { background-color: rgba(255 255 255 / 0.25); }
+  *::-webkit-scrollbar-corner { background: transparent; }
+
+  [data-theme="light"] * {
+    scrollbar-color: rgba(0 0 0 / 0.15) transparent;
+  }
+  [data-theme="light"] *::-webkit-scrollbar-thumb {
+    background-color: rgba(0 0 0 / 0.15);
+  }
+  [data-theme="light"] *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0 0 0 / 0.3);
   }
 
-  *::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-    background: transparent;
-  }
-
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  *::-webkit-scrollbar-thumb {
-    background-color: rgb(22 21 15 / 0.28);
-    border-radius: 999px;
-  }
-
-  *::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(22 21 15 / 0.45);
-  }
-
-  *::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
+  /* Utility classes */
   .tabular {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
@@ -97,122 +132,72 @@
     font-family: var(--font-mono);
     font-size: var(--text-3xs);
     line-height: var(--text-3xs--line-height);
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-ink-muted);
+    color: var(--ls-ink-muted);
   }
 
-  /* Page load: sections rise in sequence, never all at once. */
+  /* Animations */
   .reveal {
-    animation: rise 620ms cubic-bezier(0.16, 0.72, 0.24, 1) both;
+    animation: rise 500ms cubic-bezier(0.16, 0.72, 0.24, 1) both;
     animation-delay: var(--reveal-delay, 0ms);
   }
 
   @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
   }
 
-  /* The live indicator breathes rather than blinking. */
   .live-dot {
     animation: breathe 2600ms ease-in-out infinite;
   }
 
   @keyframes breathe {
-    0%,
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.45;
-      transform: scale(0.82);
-    }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.82); }
   }
 
-  /* Sparklines draw themselves once when they first appear. */
   .spark-path {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    animation: spark 1100ms cubic-bezier(0.33, 0.9, 0.3, 1) forwards;
+    animation: spark 900ms cubic-bezier(0.33, 0.9, 0.3, 1) forwards;
   }
 
   @keyframes spark {
-    to {
-      stroke-dashoffset: 0;
-    }
+    to { stroke-dashoffset: 0; }
   }
 
-  /* A price tick leaves a short tint that fades back to paper. */
-  .tick-up {
-    animation: tick-up 780ms ease-out;
-  }
-
-  .tick-down {
-    animation: tick-down 780ms ease-out;
-  }
+  .tick-up { animation: tick-up 600ms ease-out; }
+  .tick-down { animation: tick-down 600ms ease-out; }
 
   @keyframes tick-up {
-    from {
-      background-color: var(--color-emerald-quiet);
-    }
-    to {
-      background-color: transparent;
-    }
+    from { background-color: var(--ls-gain-bg); }
+    to { background-color: transparent; }
   }
 
   @keyframes tick-down {
-    from {
-      background-color: var(--color-rust-quiet);
-    }
-    to {
-      background-color: transparent;
-    }
+    from { background-color: var(--ls-loss-bg); }
+    to { background-color: transparent; }
+  }
+
+  /* Ticker tape scroll */
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .ticker-scroll {
+    animation: ticker-scroll var(--ticker-duration, 40s) linear infinite;
+  }
+
+  .ticker-scroll:hover {
+    animation-play-state: paused;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal,
-    .spark-path,
-    .tick-up,
-    .tick-down,
-    .live-dot {
+    .reveal, .spark-path, .tick-up, .tick-down, .live-dot, .ticker-scroll {
       animation: none;
     }
-
-    .spark-path {
-      stroke-dashoffset: 0;
-    }
-  }
-
-  /* Dark mode overrides */
-  [data-theme="dark"] {
-    --color-paper: #16150f;
-    --color-paper-raised: #1e1d18;
-    --color-paper-sunken: #2a2722;
-    --color-ink: #f4f1ec;
-    --color-ink-soft: #6b6658;
-    --color-ink-muted: #a8a29e;
-    --color-rule: #3f3a35;
-    --color-rule-strong: #33302c;
-    --color-amber: #ffa41b;
-    --color-amber-quiet: #ffecd2;
-    --color-emerald: #38bdf8;
-    --color-emerald-quiet: #10b981;
-    --color-rust: #bc6b4e;
-    --color-rust-quiet: #fcd3b3;
-  }
-
-  [data-theme="dark"] .tabular {
-    color: var(--color-ink);
-  }
-
-  [data-theme="dark"] .eyebrow {
-    color: var(--color-ink-muted);
+    .spark-path { stroke-dashoffset: 0; }
   }
 }

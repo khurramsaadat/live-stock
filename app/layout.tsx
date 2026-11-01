@@ -25,13 +25,13 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Live Stocks",
-  description: "A focused desktop desk for live index and watchlist pricing.",
+  description: "Real-time stock market dashboard with live indices, watchlists, heatmaps, and charts.",
   applicationName: "Live Stocks",
 };
 
 export const viewport: Viewport = {
-  colorScheme: "light",
-  themeColor: "#f5f3ef",
+  colorScheme: "dark light",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -42,6 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="dark"
       className={`${instrumentSans.variable} ${instrumentSerif.variable} ${plexMono.variable} h-full`}
     >
       <body className="min-h-full antialiased">{children}</body>

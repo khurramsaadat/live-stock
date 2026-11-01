@@ -8,11 +8,6 @@ interface AddSymbolProps {
   onAdd: (symbol: string) => boolean;
 }
 
-/**
- * Search first, like the sites reviewed: type a ticker or a company name,
- * arrow through the matches, Enter to track. The input keeps focus while the
- * list is open, so the palette never loses the keyboard.
- */
 export function AddSymbol({ available, onAdd }: AddSymbolProps) {
   const inputId = useId();
   const listId = useId();
@@ -50,14 +45,12 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setOpen(true);
-      setActive((current) => (matches.length === 0 ? 0 : (current + 1) % matches.length));
+      setActive((c) => (matches.length === 0 ? 0 : (c + 1) % matches.length));
     }
     if (event.key === "ArrowUp") {
       event.preventDefault();
       setOpen(true);
-      setActive((current) =>
-        matches.length === 0 ? 0 : (current - 1 + matches.length) % matches.length,
-      );
+      setActive((c) => (matches.length === 0 ? 0 : (c - 1 + matches.length) % matches.length));
     }
     if (event.key === "Escape") {
       setOpen(false);
@@ -67,13 +60,17 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
 
   return (
     <form
-      className="relative flex items-center gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
+      className="relative flex items-center gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
         commit();
       }}
     >
-      <div className="flex items-center gap-2 border-b border-rule-strong transition-colors duration-200 focus-within:border-amber hover:border-ink">
+      <div className="flex items-center gap-2 rounded-full border border-border bg-panel-raised px-3 transition-colors duration-200 focus-within:border-accent">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ink-muted shrink-0">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
         <label htmlFor={inputId} className="sr-only">
           Search symbols to track
         </label>
@@ -93,28 +90,22 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
           placeholder="Search symbol"
           value={query}
           disabled={disabled}
-          onChange={(event) => {
-            setQuery(event.target.value);
+          onChange={(e) => {
+            setQuery(e.target.value);
             setActive(0);
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="w-[9.5rem] bg-transparent py-1 font-mono text-3xs uppercase tracking-[0.16em] text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-40"
+          className="w-[8rem] bg-transparent py-1.5 font-mono text-3xs uppercase tracking-[0.14em] text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-40"
         />
       </div>
-
-      {disabled ? (
-        <span className="font-mono text-3xs uppercase tracking-[0.16em] text-ink-muted">
-          All tracked
-        </span>
-      ) : null}
 
       <button
         type="submit"
         disabled={disabled || matches.length === 0}
-        className="border-b border-amber pb-1 font-mono text-3xs uppercase tracking-[0.16em] text-amber transition-colors duration-200 hover:border-ink hover:text-ink disabled:border-rule disabled:text-ink-muted"
+        className="rounded-full bg-accent px-3.5 py-1.5 font-mono text-3xs font-medium uppercase tracking-[0.14em] text-ground transition-opacity duration-150 hover:opacity-90 disabled:opacity-30"
       >
         Track
       </button>
@@ -124,7 +115,7 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
           id={listId}
           role="listbox"
           aria-label="Symbol matches"
-          className="absolute right-0 top-full z-20 mt-2 w-[17rem] overflow-y-auto border border-rule bg-paper-raised py-1"
+          className="absolute right-0 top-full z-20 mt-2 w-[17rem] overflow-y-auto rounded-card border border-border bg-panel py-1 shadow-xl"
         >
           {matches.map((entry, index) => (
             <li key={entry.symbol} role="none">
@@ -133,14 +124,14 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
                 role="option"
                 id={`${listId}-${entry.symbol}`}
                 aria-selected={index === active}
-                onMouseDown={(event) => event.preventDefault()}
+                onMouseDown={(e) => e.preventDefault()}
                 onMouseEnter={() => setActive(index)}
                 onClick={() => commit(entry.symbol)}
-                className={`flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left transition-colors duration-150 ${
-                  index === active ? "bg-paper-sunken" : ""
+                className={`flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left transition-colors duration-100 ${
+                  index === active ? "bg-panel-raised" : ""
                 }`}
               >
-                <span className="tabular text-2xs tracking-[0.04em]">{entry.symbol}</span>
+                <span className="tabular text-2xs font-medium tracking-wide">{entry.symbol}</span>
                 <span className="truncate text-3xs text-ink-muted">{entry.name}</span>
               </button>
             </li>
@@ -148,12 +139,12 @@ export function AddSymbol({ available, onAdd }: AddSymbolProps) {
         </ul>
       ) : null}
 
-      {open && matches.length === 0 ? (
+      {open && matches.length === 0 && query ? (
         <p
           role="status"
-          className="absolute right-0 top-full z-20 mt-2 w-[17rem] border border-rule bg-paper-raised px-3 py-2 text-3xs text-ink-muted"
+          className="absolute right-0 top-full z-20 mt-2 w-[17rem] rounded-card border border-border bg-panel px-3 py-2 text-3xs text-ink-muted"
         >
-          {query ? "No symbol matches that search." : "Every symbol is already tracked."}
+          No symbol matches that search.
         </p>
       ) : null}
     </form>

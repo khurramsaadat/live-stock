@@ -22,7 +22,7 @@ export function SessionClock({ variant = "time" }: { variant?: "time" | "date" }
     now === 0
       ? variant === "time"
         ? "00:00:00"
-        : "DAY SESSION"
+        : "---"
       : variant === "time"
         ? timeFormat.format(new Date(now))
         : dateFormat.format(new Date(now)).replace(/,/g, "").toUpperCase();
