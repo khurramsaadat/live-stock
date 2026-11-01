@@ -99,10 +99,20 @@ export function Landing({ onLaunch }: LandingProps) {
                 Launch Dashboard
               </button>
               <a
-                href="#features"
-                className="rounded-full border border-border px-8 py-3.5 text-base font-medium text-ink transition-colors hover:bg-panel-raised"
+                href="https://github.com/khurramsaadat/live-stocks/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2.5 rounded-full bg-accent/15 border border-accent/30 px-6 py-3.5 text-base font-semibold text-accent transition-all hover:bg-accent/25 hover:shadow-lg hover:shadow-accent/10"
               >
-                Learn more
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-y-0.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download for Windows
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="opacity-60">
+                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801" />
+                </svg>
               </a>
             </div>
 

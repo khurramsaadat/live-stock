@@ -21,7 +21,7 @@
         "center": true,
         "resizable": true,
         "fullscreen": false,
-        "theme": "Light"
+        "theme": "Dark"
       }
     ]
   },
@@ -41,6 +41,10 @@
   },
   "plugins": {
     "shell": {},
-    "updater": {}
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "pubkey": ""
+    }
   }
 }

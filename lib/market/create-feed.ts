@@ -118,7 +118,7 @@ interface FinnhubQuotePayload {
  * object. In both cases the symbol is dropped from later polls and its row
  * keeps the baseline close, so one unsupported symbol cannot blank the desk.
  */
-export function createFinnhubFeed(symbols: MarketSymbol[], intervalMs = 5000): MarketFeed {
+export function createFinnhubFeed(symbols: MarketSymbol[], intervalMs = 15000): MarketFeed {
   const apiKey = process.env.NEXT_PUBLIC_MARKET_API_KEY ?? "";
   const quoteUrl = process.env.NEXT_PUBLIC_FINNHUB_URL ?? FINNHUB_QUOTE_URL;
 
@@ -152,41 +152,52 @@ export function createFinnhubFeed(symbols: MarketSymbol[], intervalMs = 5000): M
         return (await response.json()) as FinnhubQuotePayload;
       };
 
+      const BATCH_SIZE = 8;
+      const BATCH_DELAY_MS = 1200;
+
       const poll = async () => {
         const updates: FeedUpdate[] = [];
         let attempted = 0;
 
-        await Promise.all(
-          symbols.map(async (entry) => {
-            if (unavailable.has(entry.symbol)) return;
-            attempted += 1;
+        const eligible = symbols.filter((s) => !unavailable.has(s.symbol));
 
-            try {
-              const quote = await requestQuote(entry.symbol);
-              if (quote.error) throw new Error(quote.error);
-              // Finnhub reports zeroes when it has no trade for the symbol.
-              if (typeof quote.c !== "number" || quote.c <= 0) throw new Error("no quote");
-              const update: FeedUpdate = {
-                symbol: entry.symbol,
-                price: quote.c,
-                at: typeof quote.t === "number" && quote.t > 0 ? quote.t * 1000 : Date.now(),
-              };
-              if (typeof quote.pc === "number" && quote.pc > 0) {
-                update.previousClose = quote.pc;
+        for (let i = 0; i < eligible.length; i += BATCH_SIZE) {
+          if (stopped) break;
+          const batch = eligible.slice(i, i + BATCH_SIZE);
+
+          await Promise.all(
+            batch.map(async (entry) => {
+              attempted += 1;
+              try {
+                const quote = await requestQuote(entry.symbol);
+                if (quote.error) throw new Error(quote.error);
+                if (typeof quote.c !== "number" || quote.c <= 0) throw new Error("no quote");
+                const update: FeedUpdate = {
+                  symbol: entry.symbol,
+                  price: quote.c,
+                  at: typeof quote.t === "number" && quote.t > 0 ? quote.t * 1000 : Date.now(),
+                };
+                if (typeof quote.pc === "number" && quote.pc > 0) {
+                  update.previousClose = quote.pc;
+                }
+                updates.push(update);
+              } catch (error) {
+                if (stopped) return;
+                const message = error instanceof Error ? error.message : "request failed";
+                const permanent = message === "no quote" || message.toLowerCase().includes("subscription");
+                if (permanent) {
+                  unavailable.add(entry.symbol);
+                } else {
+                  lastError = message;
+                }
               }
-              updates.push(update);
-            } catch (error) {
-              if (stopped) return;
-              const message = error instanceof Error ? error.message : "request failed";
-              const permanent = message === "no quote" || message.toLowerCase().includes("subscription");
-              if (permanent) {
-                unavailable.add(entry.symbol);
-              } else {
-                lastError = message;
-              }
-            }
-          }),
-        );
+            }),
+          );
+
+          if (i + BATCH_SIZE < eligible.length && !stopped) {
+            await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+          }
+        }
 
         if (stopped) return;
 
