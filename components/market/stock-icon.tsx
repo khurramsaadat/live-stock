@@ -1,3 +1,22 @@
+"use client";
+
+import { useState } from "react";
+
+const LOGO_MAP: Record<string, string> = {
+  AAPL: "/logos/apple.svg",
+  NVDA: "/logos/nvidia.svg",
+  MSFT: "/logos/microsoft.svg",
+  GOOGL: "/logos/alphabet.svg",
+  AMZN: "/logos/amazon.svg",
+  META: "/logos/meta-platforms.svg",
+  NFLX: "/logos/netflix.svg",
+  AMD: "/logos/advanced-micro-devices.svg",
+  INTC: "/logos/intel.svg",
+  ORCL: "/logos/oracle.svg",
+  IBM: "/logos/international-bus-mach.svg",
+  TSLA: "/logos/tesla.svg",
+};
+
 const COLORS: Record<string, string> = {
   AAPL: "#A2AAAD",
   NVDA: "#76B900",
@@ -31,6 +50,29 @@ export function StockIcon({
   size?: number;
   className?: string;
 }) {
+  const logoSrc = LOGO_MAP[symbol];
+  const [imgError, setImgError] = useState(false);
+
+  if (logoSrc && !imgError) {
+    return (
+      <span
+        className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white/10 ${className}`}
+        style={{ width: size, height: size }}
+        aria-hidden
+      >
+        <img
+          src={logoSrc}
+          alt=""
+          width={Math.round(size * 0.7)}
+          height={Math.round(size * 0.7)}
+          className="object-contain"
+          onError={() => setImgError(true)}
+          loading="lazy"
+        />
+      </span>
+    );
+  }
+
   const bg = COLORS[symbol] ?? hashColor(symbol);
   const letter = symbol.replace("^", "").charAt(0);
 
@@ -48,4 +90,8 @@ export function StockIcon({
       {letter}
     </span>
   );
+}
+
+export function getLogoSrc(symbol: string): string | null {
+  return LOGO_MAP[symbol] ?? null;
 }

@@ -6,10 +6,13 @@ import type { Quote } from "@/lib/market/types";
 import { changeTone } from "./tone";
 import { StockIcon } from "./stock-icon";
 import { Sparkline } from "./sparkline";
+import { Heatmap } from "./heatmap";
+import { ChartView } from "./chart-view";
 
 type SortKey = "symbol" | "price" | "changePercent" | "previousClose";
 type SortDir = "asc" | "desc";
 type FilterSector = "all" | "gain" | "loss";
+type ViewType = "table" | "charts" | "heatmap";
 
 interface ScreenerProps {
   quotes: Quote[];
@@ -20,6 +23,7 @@ export function Screener({ quotes, onSymbolClick }: ScreenerProps) {
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: "previousClose", dir: "desc" });
   const [filter, setFilter] = useState<FilterSector>("all");
   const [search, setSearch] = useState("");
+  const [viewType, setViewType] = useState<ViewType>("table");
 
   const filtered = useMemo(() => {
     let list = quotes;
@@ -51,6 +55,42 @@ export function Screener({ quotes, onSymbolClick }: ScreenerProps) {
     { id: "all", label: "All" },
     { id: "gain", label: "Gainers" },
     { id: "loss", label: "Losers" },
+  ];
+
+  const viewTypes: { id: ViewType; label: string; icon: React.ReactNode }[] = [
+    {
+      id: "table",
+      label: "Table",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+        </svg>
+      ),
+    },
+    {
+      id: "charts",
+      label: "Charts",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+      ),
+    },
+    {
+      id: "heatmap",
+      label: "Heatmap",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="8" height="10" rx="1" />
+          <rect x="13" y="3" width="8" height="6" rx="1" />
+          <rect x="13" y="11" width="8" height="10" rx="1" />
+          <rect x="3" y="15" width="8" height="6" rx="1" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -97,86 +137,121 @@ export function Screener({ quotes, onSymbolClick }: ScreenerProps) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="mt-6 overflow-hidden rounded-card border border-border">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-border bg-panel-sunken">
-              <th className="w-16 py-3 pl-4 pr-2">
-                <span className="sr-only">Icon</span>
-              </th>
-              <SortTh column="symbol" label="Symbol" sort={sort} onSort={handleSort} align="text-left" />
-              <th className="hidden py-3 md:table-cell">
-                <span className="eyebrow">Trend</span>
-              </th>
-              <SortTh column="price" label="Price" sort={sort} onSort={handleSort} />
-              <SortTh column="changePercent" label="Change %" sort={sort} onSort={handleSort} />
-              <th className="hidden py-3 pr-4 text-right lg:table-cell">
-                <span className="eyebrow">Change</span>
-              </th>
-              <SortTh column="previousClose" label="Prev Close" sort={sort} onSort={handleSort} className="hidden xl:table-cell" />
-              <th className="hidden py-3 pr-4 text-right xl:table-cell">
-                <span className="eyebrow">Data pts</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((q) => {
-              const tone = changeTone(q.change);
-              const values = q.history.length >= 2 ? q.history : [q.previousClose, q.price];
-              return (
-                <tr
-                  key={q.symbol}
-                  className="group cursor-pointer border-b border-border bg-panel transition-colors hover:bg-panel-raised"
-                  onClick={() => onSymbolClick(q.symbol)}
-                >
-                  <td className="py-3 pl-4 pr-2">
-                    <StockIcon symbol={q.symbol} size={32} />
-                  </td>
-                  <td className="py-3 pr-4">
-                    <span className="block text-[0.9rem] font-semibold tracking-wide group-hover:text-accent transition-colors">
-                      {q.symbol}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[0.78rem] text-ink-muted">
-                      {q.name}
-                    </span>
-                  </td>
-                  <td className={`hidden py-3 pr-4 md:table-cell ${tone}`}>
-                    <Sparkline values={values} width={80} height={24} />
-                  </td>
-                  <td className="py-3 pr-4 text-right">
-                    <span className="tabular text-[0.9rem] font-medium">
-                      {formatPrice(q.price)}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4 text-right">
-                    <span className={`inline-flex items-center rounded-sm px-2 py-0.5 tabular text-[0.82rem] font-semibold ${
-                      q.change > 0 ? "bg-gain-bg text-gain" : q.change < 0 ? "bg-loss-bg text-loss" : "text-ink-muted"
-                    }`}>
-                      {formatPercent(q.changePercent)}
-                    </span>
-                  </td>
-                  <td className={`hidden py-3 pr-4 text-right tabular text-[0.82rem] lg:table-cell ${tone}`}>
-                    {formatChange(q.change)}
-                  </td>
-                  <td className="hidden py-3 pr-4 text-right tabular text-[0.82rem] text-ink-muted xl:table-cell">
-                    {formatPrice(q.previousClose)}
-                  </td>
-                  <td className="hidden py-3 pr-4 text-right tabular text-[0.78rem] text-ink-muted xl:table-cell">
-                    {q.history.length}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {sorted.length === 0 && (
-          <div className="flex items-center justify-center py-16">
-            <p className="text-sm text-ink-muted">No stocks match your filters</p>
-          </div>
-        )}
+      {/* View Type Switcher */}
+      <div className="mt-4 flex items-center gap-2">
+        <div className="flex rounded-card border border-border bg-panel p-1">
+          {viewTypes.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => setViewType(v.id)}
+              className={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-[0.78rem] font-medium transition-colors ${
+                viewType === v.id
+                  ? "bg-accent text-ground"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              {v.icon}
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* View Content */}
+      {viewType === "table" && (
+        <div className="mt-4 overflow-hidden rounded-card border border-border">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-border bg-panel-sunken">
+                <th className="w-16 py-3 pl-4 pr-2">
+                  <span className="sr-only">Icon</span>
+                </th>
+                <SortTh column="symbol" label="Symbol" sort={sort} onSort={handleSort} align="text-left" />
+                <th className="hidden py-3 md:table-cell">
+                  <span className="eyebrow">Trend</span>
+                </th>
+                <SortTh column="price" label="Price" sort={sort} onSort={handleSort} />
+                <SortTh column="changePercent" label="Change %" sort={sort} onSort={handleSort} />
+                <th className="hidden py-3 pr-4 text-right lg:table-cell">
+                  <span className="eyebrow">Change</span>
+                </th>
+                <SortTh column="previousClose" label="Prev Close" sort={sort} onSort={handleSort} className="hidden xl:table-cell" />
+                <th className="hidden py-3 pr-4 text-right xl:table-cell">
+                  <span className="eyebrow">Data pts</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((q) => {
+                const tone = changeTone(q.change);
+                const values = q.history.length >= 2 ? q.history : [q.previousClose, q.price];
+                return (
+                  <tr
+                    key={q.symbol}
+                    className="group cursor-pointer border-b border-border bg-panel transition-colors hover:bg-panel-raised"
+                    onClick={() => onSymbolClick(q.symbol)}
+                  >
+                    <td className="py-3 pl-4 pr-2">
+                      <StockIcon symbol={q.symbol} size={32} />
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className="block text-[0.9rem] font-semibold tracking-wide group-hover:text-accent transition-colors">
+                        {q.symbol}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[0.78rem] text-ink-muted">
+                        {q.name}
+                      </span>
+                    </td>
+                    <td className={`hidden py-3 pr-4 md:table-cell ${tone}`}>
+                      <Sparkline values={values} width={80} height={24} />
+                    </td>
+                    <td className="py-3 pr-4 text-right">
+                      <span className="tabular text-[0.9rem] font-medium">
+                        {formatPrice(q.price)}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-right">
+                      <span className={`inline-flex items-center rounded-sm px-2 py-0.5 tabular text-[0.82rem] font-semibold ${
+                        q.change > 0 ? "bg-gain-bg text-gain" : q.change < 0 ? "bg-loss-bg text-loss" : "text-ink-muted"
+                      }`}>
+                        {formatPercent(q.changePercent)}
+                      </span>
+                    </td>
+                    <td className={`hidden py-3 pr-4 text-right tabular text-[0.82rem] lg:table-cell ${tone}`}>
+                      {formatChange(q.change)}
+                    </td>
+                    <td className="hidden py-3 pr-4 text-right tabular text-[0.82rem] text-ink-muted xl:table-cell">
+                      {formatPrice(q.previousClose)}
+                    </td>
+                    <td className="hidden py-3 pr-4 text-right tabular text-[0.78rem] text-ink-muted xl:table-cell">
+                      {q.history.length}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {sorted.length === 0 && (
+            <div className="flex items-center justify-center py-16">
+              <p className="text-sm text-ink-muted">No stocks match your filters</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewType === "charts" && (
+        <div className="mt-4">
+          <ChartView quotes={sorted.length > 0 ? sorted : quotes} />
+        </div>
+      )}
+
+      {viewType === "heatmap" && (
+        <div className="mt-4">
+          <Heatmap quotes={sorted.length > 0 ? sorted : quotes} onSymbolClick={onSymbolClick} />
+        </div>
+      )}
     </div>
   );
 }

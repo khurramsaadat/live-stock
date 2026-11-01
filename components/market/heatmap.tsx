@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatPercent, formatPrice } from "@/lib/market/format";
 import type { Quote } from "@/lib/market/types";
+import { getLogoSrc } from "./stock-icon";
 
 interface HeatmapProps {
   quotes: Quote[];
@@ -149,6 +150,10 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
             const isHovered = hovered === rect.quote.symbol;
             const showLabel = rect.w > 35 && rect.h > 25;
             const showPrice = rect.w > 55 && rect.h > 40;
+            const showLogo = rect.w > 60 && rect.h > 50;
+            const logoSrc = getLogoSrc(rect.quote.symbol);
+            const logoSize = Math.min(rect.w * 0.28, rect.h * 0.28, 36);
+            const isLargeTile = rect.w > 100 && rect.h > 70;
 
             return (
               <g
@@ -170,28 +175,49 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
                   stroke={isHovered ? "var(--color-accent)" : "var(--color-border)"}
                   strokeWidth={isHovered ? 2 : 0.5}
                 />
+
+                {showLogo && logoSrc && (
+                  <image
+                    href={logoSrc}
+                    x={rect.x + rect.w / 2 - logoSize / 2}
+                    y={rect.y + (isLargeTile ? rect.h * 0.18 : rect.h * 0.12)}
+                    width={logoSize}
+                    height={logoSize}
+                    style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}
+                  />
+                )}
+
                 {showLabel && (
                   <>
                     <text
                       x={rect.x + rect.w / 2}
-                      y={rect.y + rect.h / 2 - (showPrice ? 6 : 0)}
+                      y={
+                        showLogo && logoSrc
+                          ? rect.y + (isLargeTile ? rect.h * 0.58 : rect.h * 0.55)
+                          : rect.y + rect.h / 2 - (showPrice ? 6 : 0)
+                      }
                       textAnchor="middle"
                       dominantBaseline="central"
                       fill="white"
                       fontSize={rect.w > 100 ? 13 : 10}
-                      fontWeight="600"
-                      fontFamily="var(--font-mono)"
+                      fontWeight="700"
+                      fontFamily="var(--font-heading)"
                     >
                       {rect.quote.symbol}
                     </text>
                     {showPrice && (
                       <text
                         x={rect.x + rect.w / 2}
-                        y={rect.y + rect.h / 2 + 12}
+                        y={
+                          showLogo && logoSrc
+                            ? rect.y + (isLargeTile ? rect.h * 0.72 : rect.h * 0.72)
+                            : rect.y + rect.h / 2 + 12
+                        }
                         textAnchor="middle"
                         dominantBaseline="central"
-                        fill="rgba(255,255,255,0.8)"
-                        fontSize={9}
+                        fill="rgba(255,255,255,0.85)"
+                        fontSize={rect.w > 100 ? 11 : 9}
+                        fontWeight="600"
                         fontFamily="var(--font-mono)"
                       >
                         {formatPercent(rect.quote.changePercent)}
@@ -203,6 +229,29 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
             );
           })}
         </svg>
+      </div>
+
+      {/* Color legend */}
+      <div className="mt-3 flex items-center justify-center gap-1">
+        {[
+          { color: "#FF5000", label: "-3%+" },
+          { color: "#CC4400", label: "-3%" },
+          { color: "#A84428", label: "-1.5%" },
+          { color: "#8B3A2A", label: "-0.5%" },
+          { color: "#404040", label: "0%" },
+          { color: "#2A5A1C", label: "+0.5%" },
+          { color: "#007803", label: "+1.5%" },
+          { color: "#00A004", label: "+3%" },
+          { color: "#00C805", label: "+3%+" },
+        ].map((item) => (
+          <div key={item.label} className="flex flex-col items-center gap-0.5">
+            <div
+              className="h-2.5 w-8 rounded-sm"
+              style={{ backgroundColor: item.color }}
+            />
+            <span className="text-[0.55rem] text-ink-muted">{item.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* Tooltip */}

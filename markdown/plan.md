@@ -1,59 +1,92 @@
-# Live Stocks - Redesign Plan
+# Live Stocks - Build Plan
 
 ## Vision
 
-A premium dark terminal-style stock dashboard inspired by Robinhood's visual identity (pure black ground, chartreuse accent, serif headlines, pill buttons) combined with TradingView's data power. Tabbed layout with real-time data from Finnhub (equities) + TwelveData (indices).
+A premium dark stock dashboard inspired by Robinhood's visual identity and TradingView's data density. Landing page with hero, features, and CTA. Tabbed app layout with real-time data from Finnhub. Screener, charts, heatmap, watchlist, and dashboard views.
 
 ---
 
 ## Build Stages
 
 ### Stage 1 - Design System + Layout Shell - DONE
-- [x] New CSS theme (Robinhood palette: #000 ground, #CCFF00 accent, #00C805 gain, #FF5000 loss)
+- [x] CSS theme (Robinhood palette: #000 ground, #CCFF00 accent, #00C805 gain, #FF5000 loss)
 - [x] Dark/light theme toggle with localStorage persistence
-- [x] Tab navigation component (Dashboard, Watchlist, Heatmap, Charts) with chartreuse pill active state
-- [x] New header with logo + tabs + session clock + status pill + theme toggle
-- [x] Scrolling ticker tape component (all symbols, auto-scroll, pause on hover)
-- [x] Compact footer
+- [x] Tab navigation (Dashboard, Screener, Watchlist, Heatmap, Charts)
+- [x] Header with logo + tabs + session clock + status pill + theme toggle
+- [x] Scrolling ticker tape (all symbols, auto-scroll, pause on hover)
+- [x] Footer
 
-### Stage 2 - Data Layer Fix - DONE
-- [x] Apply provider previousClose to fix change percentages (was showing +135% instead of -4%)
+### Stage 2 - Data Layer - DONE
+- [x] Finnhub adapter with previousClose fix
+- [x] localStorage price cache (24h TTL) for offline/weekend viewing
+- [x] Hydration-safe cache loading (useEffect, not useState initializer)
 - [x] Safe fallback for HMR state shape changes
-- [x] Filter heatmap/charts to only show equities with live data
 
 ### Stage 3 - Dashboard Tab - DONE
-- [x] Index cards row (4 cards in a grid with sparklines)
-- [x] Top movers section (Leaders + Laggards, sorted by changePercent)
-- [x] Market pulse sidebar (breadth bar, stream status, legend)
+- [x] Index cards row (4 cards with sparklines, clickable)
+- [x] Top Gainers / Top Losers sections with stock icons
+- [x] Most Active section
+- [x] Market Breadth (advancing/declining bar + performance spread)
+- [x] Click any stock to navigate to Charts tab
 
-### Stage 4 - Watchlist Tab - DONE
-- [x] Redesigned table with dark panel rows, hover borders, chartreuse accent
-- [x] Sort headers with amber arrows
-- [x] Sparkline intraday column
-- [x] Tick-up/tick-down flash animation
-- [x] Search combobox with pill-shaped input + chartreuse Track button
-- [x] Reset to default pill button
-- [ ] Drag-to-reorder with drag handles (future)
-- [ ] Multiple named watchlists with tab bar (future)
+### Stage 4 - Screener Tab - DONE
+- [x] Full table with stock icons, sparklines, price, change%, change
+- [x] Search filter (by symbol or name)
+- [x] Gainers/Losers/All filter pills
+- [x] Sortable columns (symbol, price, change%, prev close)
+- [x] Click row to navigate to Charts tab
 
-### Stage 5 - Heatmap Tab - DONE
-- [x] Squarified treemap layout (SVG) sized by previousClose
-- [x] Green/red fill by changePercent intensity
-- [x] Hover tooltip showing symbol, name, price, change
-- [x] Symbol labels and percent on tiles large enough to display
+### Stage 5 - Watchlist Tab - DONE
+- [x] Sortable table with sparklines, tick-up/tick-down flash
+- [x] Search combobox + Track button
+- [x] Clickable symbol names (navigate to chart)
+- [x] Reset to default button
+- [ ] Drag-to-reorder (future)
+- [ ] Multiple named watchlists (future)
 
-### Stage 6 - Charts Tab - DONE
+### Stage 6 - Heatmap Tab - DONE
+- [x] Squarified treemap (SVG) sized by previousClose
+- [x] Green/red fill by changePercent
+- [x] Hover tooltip, click to navigate to chart
+- [x] Fixed coordinate bug in squarify algorithm
+
+### Stage 7 - Charts Tab - DONE
 - [x] Full-width SVG chart with gradient area fill
-- [x] Grid lines with price axis labels
-- [x] Crosshair cursor with price readout on hover
-- [x] Symbol selector pills (chartreuse active, bordered inactive)
-- [x] Stats row (Open, High, Low, Prev Close)
-- [x] "Waiting for price history" state when < 2 data points
+- [x] Y-axis price labels, previous close dashed line
+- [x] Crosshair cursor with price label on both axes
+- [x] Period selector (1D, 5D, 1M, ALL)
+- [x] Stats grid (Price, Change, Change %, High, Low, Prev Close)
+- [x] Simulated curve when only 1 data point available
+- [x] "Last close" badge when market is closed
+- [x] Pulsing endpoint dot
 
-### Stage 7 - Polish (future)
+### Stage 8 - Landing Page - DONE
+- [x] Fixed header with nav + "Open App" button
+- [x] Hero section with gradient, headline, CTA
+- [x] Features grid (6 cards)
+- [x] Market Data section with index preview cards
+- [x] Tools section with tab pills + CTA
+- [x] 5-column footer with copyright
+- [x] Landing/App state persisted in localStorage
+
+### Stage 9 - Typography and Design Overhaul - DONE
+- [x] Replaced Instrument Serif with Space Grotesk for headings
+- [x] Replaced Instrument Sans with Inter for body
+- [x] Added stock icon avatars (colored circles with letter)
+- [x] Bigger tab buttons and UI elements
+- [x] Better logo (chartreuse icon + Space Grotesk "LiveStocks")
+
+### Stage 10 - Interactivity - DONE
+- [x] Click any stock from any tab to navigate to its chart
+- [x] Keyboard shortcuts (Alt+1-5 for tabs, Escape to close modal)
+- [x] Stock detail modal overlay
+- [x] Back to top button
+- [x] Backdrop click to dismiss modal
+
+### Stage 11 - Future
 - [ ] Drag-to-reorder watchlist
 - [ ] Multiple named watchlists
-- [ ] Keyboard shortcuts (/, Ctrl+K, D, Escape)
+- [ ] Fix TwelveData adapter for live index data
 - [ ] Mobile responsive fine-tuning
 - [ ] Price alerts (browser notifications)
 - [ ] Compare mode overlay
@@ -62,30 +95,38 @@ A premium dark terminal-style stock dashboard inspired by Robinhood's visual ide
 
 ## Design System
 
-### Dark Mode (default)
+### Fonts
+- **Headings**: Space Grotesk (600 weight, tight tracking)
+- **Body/UI**: Inter (clean, modern sans-serif)
+- **Numbers**: IBM Plex Mono (tabular-nums)
+- **Labels**: IBM Plex Mono (uppercase, tracking-wide)
+
+### Colors (Dark Mode)
 | Token | Value |
 |---|---|
 | Ground | #000000 |
-| Panel | #141414 |
+| Panel | #111111 |
+| Panel Raised | #1A1A1A |
 | Accent | #CCFF00 (chartreuse) |
-| Gain | #00C805 (Robinhood green) |
-| Loss | #FF5000 (Robinhood red-orange) |
+| Gain | #00C805 |
+| Loss | #FF5000 |
 
-### Light Mode
+### Colors (Light Mode)
 | Token | Value |
 |---|---|
-| Ground | #F5F5F5 |
+| Ground | #F7F7F8 |
 | Panel | #FFFFFF |
+| Panel Raised | #F0F0F0 |
 | Accent | #7CB305 |
 | Gain | #00873C |
 | Loss | #D32F2F |
 
-### Typography
-- Headlines: Instrument Serif italic
-- UI/Body: Instrument Sans
-- Numbers: IBM Plex Mono tabular
-- Eyebrow/Labels: Plex Mono 10px uppercase
-
 ### Shapes
 - Buttons/tabs: pill (border-radius: 999px)
-- Cards: 8px radius
+- Cards: 10px radius
+- Small elements: 6px radius
+
+### Stock Icons
+- Colored circle with first letter of symbol
+- Brand-specific colors for major stocks (AAPL gray, NVDA green, MSFT blue, etc.)
+- Hash-based color for unknown symbols

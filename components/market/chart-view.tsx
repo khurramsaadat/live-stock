@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatPrice, formatPercent, formatChange } from "@/lib/market/format";
 import type { Quote } from "@/lib/market/types";
 import { changeTone } from "./tone";
+import { StockIcon } from "./stock-icon";
 
 interface ChartViewProps {
   quotes: Quote[];
@@ -190,15 +191,16 @@ export function ChartView({ quotes, initialSymbol }: ChartViewProps) {
               setSelectedSymbol(q.symbol);
               setCrosshair(null);
             }}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.1em] transition-all duration-150 ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.72rem] font-medium tracking-wide transition-all duration-150 ${
               selectedSymbol === q.symbol
-                ? "bg-accent text-ground font-medium"
+                ? "bg-accent text-ground"
                 : "border border-border text-ink-muted hover:border-ink-muted hover:text-ink"
             }`}
           >
+            <StockIcon symbol={q.symbol} size={18} />
             <span>{q.symbol}</span>
             {selectedSymbol !== q.symbol && (
-              <span className={`text-[0.6rem] ${changeTone(q.change)}`}>
+              <span className={`text-[0.65rem] ${changeTone(q.change)}`}>
                 {formatPercent(q.changePercent)}
               </span>
             )}
