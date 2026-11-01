@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatClock, formatChange, formatPercent, formatPrice } from "@/lib/market/format";
-import { findSymbol, INDICES } from "@/lib/market/universe";
+import { findSymbol, INDICES, WATCHLIST_UNIVERSE } from "@/lib/market/universe";
 import { useMarketFeed } from "@/lib/market/use-market-feed";
 import { useWatchlist } from "@/lib/market/use-watchlist";
 import type { FeedStatus, MarketSymbol, Quote } from "@/lib/market/types";
@@ -68,17 +68,15 @@ export function Dashboard({ onBackToLanding }: DashboardProps) {
   };
 
   const tracked = useMemo<MarketSymbol[]>(() => {
-    const watchSymbols = watchlist.symbols
-      .map((symbol) => findSymbol(symbol))
-      .filter((entry): entry is MarketSymbol => Boolean(entry));
-    return [...INDICES, ...watchSymbols];
-  }, [watchlist.symbols]);
+    return [...INDICES, ...WATCHLIST_UNIVERSE];
+  }, []);
 
   const { quotes, status, detail, feedKind, lastUpdated } = useMarketFeed(tracked);
 
   const indexQuotes = quotes.filter((q) => q.kind === "index");
-  const watchQuotes = quotes.filter((q) => q.kind === "equity");
-  const allQuotes = [...indexQuotes, ...watchQuotes];
+  const allEquityQuotes = quotes.filter((q) => q.kind === "equity");
+  const watchQuotes = allEquityQuotes.filter((q) => watchlist.symbols.includes(q.symbol));
+  const allQuotes = [...indexQuotes, ...allEquityQuotes];
 
   const goToChart = (symbol: string) => {
     setSelectedSymbol(symbol);
@@ -147,7 +145,7 @@ export function Dashboard({ onBackToLanding }: DashboardProps) {
           />
         )}
         {activeTab === "screener" && (
-          <Screener quotes={watchQuotes} onSymbolClick={goToChart} />
+          <Screener quotes={allEquityQuotes} onSymbolClick={goToChart} />
         )}
         {activeTab === "watchlist" && (
           <WatchlistTab
@@ -159,13 +157,13 @@ export function Dashboard({ onBackToLanding }: DashboardProps) {
         )}
         {activeTab === "heatmap" && (
           <div className="p-6 sm:p-8">
-            <Heatmap quotes={watchQuotes} onSymbolClick={goToChart} />
+            <Heatmap quotes={allEquityQuotes} onSymbolClick={goToChart} />
           </div>
         )}
         {activeTab === "charts" && (
           <div className="p-6 sm:p-8">
             <ChartView
-              quotes={watchQuotes.length > 0 ? watchQuotes : allQuotes}
+              quotes={allEquityQuotes.length > 0 ? allEquityQuotes : allQuotes}
               initialSymbol={selectedSymbol}
             />
           </div>

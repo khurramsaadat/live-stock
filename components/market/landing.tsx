@@ -35,7 +35,7 @@ export function Landing({ onLaunch }: LandingProps) {
           <Logo />
           <nav className="hidden items-center gap-8 md:flex">
             <a href="#features" className="text-[0.9rem] text-ink-muted transition-colors hover:text-ink">Features</a>
-            <a href="#markets" className="text-[0.9rem] text-ink-muted transition-colors hover:text-ink">Markets</a>
+            <a href="/markets" className="text-[0.9rem] text-ink-muted transition-colors hover:text-ink">Markets</a>
             <a href="#how-it-works" className="text-[0.9rem] text-ink-muted transition-colors hover:text-ink">How It Works</a>
             <a href="#faq" className="text-[0.9rem] text-ink-muted transition-colors hover:text-ink">FAQ</a>
           </nav>
@@ -152,7 +152,7 @@ export function Landing({ onLaunch }: LandingProps) {
         <section className="border-y border-border bg-panel">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px sm:grid-cols-4">
             {[
-              { value: "40+", label: "Stocks tracked" },
+              { value: "100+", label: "Stocks tracked" },
               { value: "4", label: "Major indices" },
               { value: "<1s", label: "Update latency" },
               { value: "100%", label: "Free to use" },
@@ -208,7 +208,7 @@ export function Landing({ onLaunch }: LandingProps) {
                 {
                   icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
                   title: "Real Company Logos",
-                  desc: "40+ official stock logos displayed throughout - in the screener, heatmap, watchlist, and charts.",
+                  desc: "100+ official stock logos displayed throughout - in the screener, heatmap, watchlist, and charts.",
                 },
               ].map((feature) => (
                 <div
@@ -227,8 +227,16 @@ export function Landing({ onLaunch }: LandingProps) {
         </section>
 
         {/* Markets */}
-        <section id="markets" className="border-t border-border bg-panel py-24">
-          <div className="mx-auto max-w-6xl px-6">
+        <section id="markets" className="relative border-t border-border bg-panel py-24 overflow-hidden">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=60&auto=format')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+          <div className="relative mx-auto max-w-6xl px-6">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
                 <span className="eyebrow">Market Data</span>
@@ -243,7 +251,7 @@ export function Landing({ onLaunch }: LandingProps) {
                 <ul className="mt-8 space-y-4">
                   {[
                     "S&P 500, Nasdaq, Dow Jones, Russell 2000 indices",
-                    "40+ individual equities tracked by default",
+                    "100+ individual equities tracked across 8 sectors",
                     "Add any US-listed stock to your watchlist",
                     "Automatic reconnection with exponential backoff",
                     "24-hour local cache for offline access",
@@ -295,7 +303,7 @@ export function Landing({ onLaunch }: LandingProps) {
                 {
                   step: "2",
                   title: "Customize your watchlist",
-                  desc: "Add or remove stocks from 40+ pre-loaded symbols. Your changes are saved locally in your browser.",
+                  desc: "Add or remove stocks from 100+ pre-loaded symbols. Your changes are saved locally in your browser.",
                 },
                 {
                   step: "3",
@@ -376,7 +384,7 @@ export function Landing({ onLaunch }: LandingProps) {
                 },
                 {
                   q: "How many stocks can I track?",
-                  a: "The app comes pre-loaded with 40+ stocks including mega-caps like Apple, Nvidia, Microsoft, Amazon, and Tesla. You can add any US-listed symbol to your watchlist.",
+                  a: "The app comes pre-loaded with 100+ stocks across 8 sectors including mega-caps like Apple, Nvidia, Microsoft, Amazon, and Tesla. You can add any US-listed symbol to your watchlist.",
                 },
                 {
                   q: "What if the data stops updating?",
@@ -425,8 +433,16 @@ export function Landing({ onLaunch }: LandingProps) {
         </section>
 
         {/* CTA */}
-        <section className="border-t border-border bg-panel py-24">
-          <div className="mx-auto max-w-3xl px-6 text-center">
+        <section className="relative border-t border-border bg-panel py-24 overflow-hidden">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&q=60&auto=format')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+          <div className="relative mx-auto max-w-3xl px-6 text-center">
             <h2 className="font-heading text-3xl font-bold tracking-tight text-ink sm:text-4xl">
               Ready to track the markets?
             </h2>
@@ -471,7 +487,7 @@ export function Landing({ onLaunch }: LandingProps) {
               <h4 className="text-[0.8rem] font-semibold uppercase tracking-wide text-ink-secondary">Product</h4>
               <ul className="mt-4 space-y-2.5">
                 <li><a href="#features" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Features</a></li>
-                <li><a href="#markets" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Markets</a></li>
+                <li><a href="/markets" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Markets</a></li>
                 <li><a href="#how-it-works" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">How It Works</a></li>
                 <li><a href="#faq" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">FAQ</a></li>
               </ul>
@@ -479,9 +495,9 @@ export function Landing({ onLaunch }: LandingProps) {
             <div>
               <h4 className="text-[0.8rem] font-semibold uppercase tracking-wide text-ink-secondary">Legal</h4>
               <ul className="mt-4 space-y-2.5">
-                <li><span className="text-[0.85rem] text-ink-muted cursor-default">Privacy Policy</span></li>
-                <li><span className="text-[0.85rem] text-ink-muted cursor-default">Terms of Service</span></li>
-                <li><span className="text-[0.85rem] text-ink-muted cursor-default">Disclaimer</span></li>
+                <li><a href="/privacy" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Privacy Policy</a></li>
+                <li><a href="/terms" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Terms of Service</a></li>
+                <li><a href="/disclaimer" className="text-[0.85rem] text-ink-muted transition-colors hover:text-ink">Disclaimer</a></li>
               </ul>
             </div>
             <div>

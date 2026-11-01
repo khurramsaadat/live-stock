@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatPercent, formatPrice } from "@/lib/market/format";
 import type { Quote } from "@/lib/market/types";
+import { WATCHLIST_UNIVERSE, type Sector } from "@/lib/market/universe";
 import { getLogoSrc } from "./stock-icon";
 
 interface HeatmapProps {
@@ -21,6 +22,20 @@ function heatColor(changePercent: number): string {
   if (changePercent > -3) return "#CC4400";
   return "#FF5000";
 }
+
+const SECTOR_COLORS: Record<Sector, string> = {
+  Technology: "#3B82F6",
+  Financials: "#8B5CF6",
+  Healthcare: "#06B6D4",
+  "Consumer Cyclical": "#F59E0B",
+  "Consumer Defensive": "#10B981",
+  Energy: "#EF4444",
+  Industrials: "#6366F1",
+  Communication: "#EC4899",
+  "Real Estate": "#14B8A6",
+  Utilities: "#84CC16",
+  Materials: "#F97316",
+};
 
 interface TreemapRect {
   quote: Quote;
@@ -126,21 +141,80 @@ function squarify(
   return rects;
 }
 
+function getSectorForSymbol(symbol: string): Sector | null {
+  const entry = WATCHLIST_UNIVERSE.find((s) => s.symbol === symbol);
+  return entry?.sector ?? null;
+}
+
 export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [groupBySector, setGroupBySector] = useState(true);
 
-  const WIDTH = 900;
-  const HEIGHT = 500;
-  const rects = squarify(quotes, WIDTH, HEIGHT);
+  const WIDTH = 960;
+  const HEIGHT = 560;
+
+  const sectorStats = useMemo(() => {
+    const map = new Map<Sector, { count: number; totalChange: number }>();
+    for (const q of quotes) {
+      const sector = getSectorForSymbol(q.symbol);
+      if (!sector) continue;
+      const existing = map.get(sector) ?? { count: 0, totalChange: 0 };
+      existing.count += 1;
+      existing.totalChange += q.changePercent;
+      map.set(sector, existing);
+    }
+    return map;
+  }, [quotes]);
+
+  const rects = useMemo(() => squarify(quotes, WIDTH, HEIGHT), [quotes]);
 
   return (
     <div>
-      <h1 className="heading-lg text-ink">Performance Heatmap</h1>
-      <p className="mt-1 text-[0.78rem] text-ink-muted">
-        Tile size represents relative weight. Color indicates daily change.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="heading-lg text-ink">Performance Heatmap</h1>
+          <p className="mt-1 text-[0.78rem] text-ink-muted">
+            {quotes.length} stocks - tile size represents relative weight, color indicates daily change
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setGroupBySector(!groupBySector)}
+          className={`rounded-full border px-3.5 py-1.5 text-[0.72rem] font-medium transition-colors ${
+            groupBySector
+              ? "border-accent/30 bg-accent/10 text-accent"
+              : "border-border text-ink-muted hover:text-ink"
+          }`}
+        >
+          Sector labels {groupBySector ? "ON" : "OFF"}
+        </button>
+      </div>
 
-      <div className="mt-5 overflow-hidden rounded-card border border-border">
+      {/* Sector legend */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {Array.from(sectorStats.entries())
+          .sort((a, b) => b[1].count - a[1].count)
+          .map(([sector, stats]) => {
+            const avgChange = stats.totalChange / stats.count;
+            return (
+              <span
+                key={sector}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-panel px-2.5 py-1 text-[0.68rem]"
+              >
+                <span
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: SECTOR_COLORS[sector] }}
+                />
+                <span className="font-medium text-ink-muted">{sector}</span>
+                <span className={`tabular font-semibold ${avgChange >= 0 ? "text-gain" : "text-loss"}`}>
+                  {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(2)}%
+                </span>
+              </span>
+            );
+          })}
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-card border border-border">
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           className="w-full"
@@ -148,12 +222,13 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
         >
           {rects.map((rect) => {
             const isHovered = hovered === rect.quote.symbol;
-            const showLabel = rect.w > 35 && rect.h > 25;
-            const showPrice = rect.w > 55 && rect.h > 40;
-            const showLogo = rect.w > 60 && rect.h > 50;
+            const showLabel = rect.w > 30 && rect.h > 22;
+            const showPrice = rect.w > 48 && rect.h > 38;
+            const showLogo = rect.w > 56 && rect.h > 46;
             const logoSrc = getLogoSrc(rect.quote.symbol);
-            const logoSize = Math.min(rect.w * 0.28, rect.h * 0.28, 36);
-            const isLargeTile = rect.w > 100 && rect.h > 70;
+            const logoSize = Math.min(rect.w * 0.26, rect.h * 0.26, 32);
+            const isLargeTile = rect.w > 80 && rect.h > 60;
+            const sector = getSectorForSymbol(rect.quote.symbol);
 
             return (
               <g
@@ -168,19 +243,32 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
                   y={rect.y + 1}
                   width={Math.max(0, rect.w - 2)}
                   height={Math.max(0, rect.h - 2)}
-                  rx={4}
+                  rx={3}
                   fill={heatColor(rect.quote.changePercent)}
-                  opacity={isHovered ? 1 : 0.9}
+                  opacity={isHovered ? 1 : 0.88}
                   className="transition-all duration-150"
                   stroke={isHovered ? "var(--color-accent)" : "var(--color-border)"}
                   strokeWidth={isHovered ? 2 : 0.5}
                 />
 
+                {/* Sector border indicator */}
+                {groupBySector && sector && rect.w > 40 && rect.h > 30 && (
+                  <rect
+                    x={rect.x + 2}
+                    y={rect.y + 2}
+                    width={8}
+                    height={3}
+                    rx={1.5}
+                    fill={SECTOR_COLORS[sector]}
+                    opacity={0.8}
+                  />
+                )}
+
                 {showLogo && logoSrc && (
                   <image
                     href={logoSrc}
                     x={rect.x + rect.w / 2 - logoSize / 2}
-                    y={rect.y + (isLargeTile ? rect.h * 0.18 : rect.h * 0.12)}
+                    y={rect.y + (isLargeTile ? rect.h * 0.15 : rect.h * 0.1)}
                     width={logoSize}
                     height={logoSize}
                     style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}
@@ -193,13 +281,13 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
                       x={rect.x + rect.w / 2}
                       y={
                         showLogo && logoSrc
-                          ? rect.y + (isLargeTile ? rect.h * 0.58 : rect.h * 0.55)
-                          : rect.y + rect.h / 2 - (showPrice ? 6 : 0)
+                          ? rect.y + (isLargeTile ? rect.h * 0.56 : rect.h * 0.52)
+                          : rect.y + rect.h / 2 - (showPrice ? 5 : 0)
                       }
                       textAnchor="middle"
                       dominantBaseline="central"
                       fill="white"
-                      fontSize={rect.w > 100 ? 13 : 10}
+                      fontSize={rect.w > 80 ? 12 : rect.w > 50 ? 10 : 8}
                       fontWeight="700"
                       fontFamily="var(--font-heading)"
                     >
@@ -210,13 +298,13 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
                         x={rect.x + rect.w / 2}
                         y={
                           showLogo && logoSrc
-                            ? rect.y + (isLargeTile ? rect.h * 0.72 : rect.h * 0.72)
-                            : rect.y + rect.h / 2 + 12
+                            ? rect.y + (isLargeTile ? rect.h * 0.72 : rect.h * 0.7)
+                            : rect.y + rect.h / 2 + 11
                         }
                         textAnchor="middle"
                         dominantBaseline="central"
                         fill="rgba(255,255,255,0.85)"
-                        fontSize={rect.w > 100 ? 11 : 9}
+                        fontSize={rect.w > 80 ? 10 : 8}
                         fontWeight="600"
                         fontFamily="var(--font-mono)"
                       >
@@ -258,10 +346,18 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
       {hovered && (() => {
         const q = quotes.find((q) => q.symbol === hovered);
         if (!q) return null;
+        const sector = getSectorForSymbol(q.symbol);
         return (
-          <div className="mt-3 inline-flex items-center gap-4 rounded-full border border-border bg-panel px-4 py-2">
+          <div className="mt-3 inline-flex items-center gap-3 rounded-full border border-border bg-panel px-4 py-2">
+            {sector && (
+              <span
+                className="size-2.5 rounded-full"
+                style={{ backgroundColor: SECTOR_COLORS[sector] }}
+              />
+            )}
             <span className="tabular text-sm font-medium">{q.symbol}</span>
             <span className="text-[0.78rem] text-ink-muted">{q.name}</span>
+            {sector && <span className="text-[0.68rem] text-ink-muted">({sector})</span>}
             <span className="tabular text-sm">{formatPrice(q.price)}</span>
             <span className={`tabular text-sm font-medium ${q.change >= 0 ? "text-gain" : "text-loss"}`}>
               {formatPercent(q.changePercent)}
