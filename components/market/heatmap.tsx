@@ -6,17 +6,18 @@ import type { Quote } from "@/lib/market/types";
 
 interface HeatmapProps {
   quotes: Quote[];
+  onSymbolClick?: (symbol: string) => void;
 }
 
 function heatColor(changePercent: number): string {
   if (changePercent > 3) return "#00C805";
   if (changePercent > 1.5) return "#00A004";
   if (changePercent > 0.5) return "#007803";
-  if (changePercent > 0) return "#005002";
-  if (changePercent === 0) return "#333333";
-  if (changePercent > -0.5) return "#6B2000";
-  if (changePercent > -1.5) return "#993000";
-  if (changePercent > -3) return "#CC4000";
+  if (changePercent > 0) return "#2A5A1C";
+  if (changePercent === 0) return "#404040";
+  if (changePercent > -0.5) return "#8B3A2A";
+  if (changePercent > -1.5) return "#A84428";
+  if (changePercent > -3) return "#CC4400";
   return "#FF5000";
 }
 
@@ -79,7 +80,10 @@ function squarify(
       }
     }
 
-    const rowLength = rowArea / sideLength;
+    const rowLength = Math.min(
+      rowArea / sideLength,
+      isHorizontal ? remainingW : remainingH,
+    );
 
     let offset = 0;
     for (const item of row) {
@@ -88,30 +92,30 @@ function squarify(
       if (isHorizontal) {
         rects.push({
           quote: item.quote,
-          x: x + offset,
-          y,
-          w: itemLength,
-          h: rowLength,
-        });
-        offset += itemLength;
-      } else {
-        rects.push({
-          quote: item.quote,
           x,
           y: y + offset,
           w: rowLength,
           h: itemLength,
         });
         offset += itemLength;
+      } else {
+        rects.push({
+          quote: item.quote,
+          x: x + offset,
+          y,
+          w: itemLength,
+          h: rowLength,
+        });
+        offset += itemLength;
       }
     }
 
     if (isHorizontal) {
-      y += rowLength;
-      remainingH -= rowLength;
-    } else {
       x += rowLength;
       remainingW -= rowLength;
+    } else {
+      y += rowLength;
+      remainingH -= rowLength;
     }
 
     const usedSymbols = new Set(row.map((r) => r.quote.symbol));
@@ -121,7 +125,7 @@ function squarify(
   return rects;
 }
 
-export function Heatmap({ quotes }: HeatmapProps) {
+export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const WIDTH = 900;
@@ -143,14 +147,15 @@ export function Heatmap({ quotes }: HeatmapProps) {
         >
           {rects.map((rect) => {
             const isHovered = hovered === rect.quote.symbol;
-            const showLabel = rect.w > 50 && rect.h > 40;
-            const showPrice = rect.w > 70 && rect.h > 55;
+            const showLabel = rect.w > 35 && rect.h > 25;
+            const showPrice = rect.w > 55 && rect.h > 40;
 
             return (
               <g
                 key={rect.quote.symbol}
                 onMouseEnter={() => setHovered(rect.quote.symbol)}
                 onMouseLeave={() => setHovered(null)}
+                onClick={() => onSymbolClick?.(rect.quote.symbol)}
                 className="cursor-pointer"
               >
                 <rect
@@ -158,10 +163,12 @@ export function Heatmap({ quotes }: HeatmapProps) {
                   y={rect.y + 1}
                   width={Math.max(0, rect.w - 2)}
                   height={Math.max(0, rect.h - 2)}
-                  rx={3}
+                  rx={4}
                   fill={heatColor(rect.quote.changePercent)}
-                  opacity={isHovered ? 1 : 0.85}
-                  className="transition-opacity duration-150"
+                  opacity={isHovered ? 1 : 0.9}
+                  className="transition-all duration-150"
+                  stroke={isHovered ? "var(--color-accent)" : "var(--color-border)"}
+                  strokeWidth={isHovered ? 2 : 0.5}
                 />
                 {showLabel && (
                   <>

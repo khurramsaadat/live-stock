@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { createMarketFeed } from "./create-feed";
 import { findSymbol } from "./universe";
 import {
@@ -14,7 +15,6 @@ interface FeedState {
   prices: Record<string, number>;
   history: Record<string, number[]>;
   updatedAt: Record<string, number | null>;
-  /** Provider-reported previous close, when available. */
   previousClose: Record<string, number>;
 }
 
@@ -25,10 +25,52 @@ const emptyState: FeedState = {
   previousClose: {},
 };
 
+const CACHE_KEY = "ls-market-cache.v1";
+
+interface CachedData {
+  prices: Record<string, number>;
+  previousClose: Record<string, number>;
+  history: Record<string, number[]>;
+  updatedAt: Record<string, number | null>;
+  savedAt: number;
+}
+
+function loadCache(): Partial<FeedState> {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return {};
+    const cached: CachedData = JSON.parse(raw);
+    const age = Date.now() - (cached.savedAt ?? 0);
+    if (age > 24 * 60 * 60 * 1000) return {};
+    return {
+      prices: cached.prices ?? {},
+      previousClose: cached.previousClose ?? {},
+      history: cached.history ?? {},
+      updatedAt: cached.updatedAt ?? {},
+    };
+  } catch {
+    return {};
+  }
+}
+
+function saveCache(state: FeedState) {
+  try {
+    const data: CachedData = {
+      prices: state.prices,
+      previousClose: state.previousClose,
+      history: state.history,
+      updatedAt: state.updatedAt,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
 /**
  * Connects one feed for the requested symbols and turns incremental price
- * updates into render-ready quotes. Uses the provider's previousClose when
- * available (e.g. Finnhub's `pc` field) for accurate change calculations.
+ * updates into render-ready quotes. Caches the last known state in
+ * localStorage so charts and data are available immediately on reload,
+ * even when the market is closed.
  */
 export function useMarketFeed(symbols: MarketSymbol[]) {
   const symbolKey = symbols.map((entry) => entry.symbol).join(",");
@@ -49,8 +91,29 @@ export function useMarketFeed(symbols: MarketSymbol[]) {
   );
 
   const [state, setState] = useState<FeedState>(emptyState);
+  const cacheLoaded = useRef(false);
+
+  useEffect(() => {
+    if (cacheLoaded.current) return;
+    cacheLoaded.current = true;
+    const cached = loadCache();
+    if (Object.keys(cached.prices ?? {}).length > 0) {
+      setState((prev) => ({
+        prices: { ...cached.prices, ...prev.prices },
+        history: { ...cached.history, ...prev.history },
+        updatedAt: { ...cached.updatedAt, ...prev.updatedAt },
+        previousClose: { ...cached.previousClose, ...prev.previousClose },
+      }));
+    }
+  }, []);
   const [status, setStatus] = useState<FeedStatus>("idle");
   const [detail, setDetail] = useState<string | undefined>(undefined);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceSave = useCallback((s: FeedState) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveCache(s), 2000);
+  }, []);
 
   useEffect(() => {
     if (!feed) return;
@@ -72,6 +135,7 @@ export function useMarketFeed(symbols: MarketSymbol[]) {
               [update.symbol]: update.previousClose,
             };
           }
+          debounceSave(nextState);
           return nextState;
         });
       },
@@ -81,8 +145,11 @@ export function useMarketFeed(symbols: MarketSymbol[]) {
       },
     });
 
-    return () => disconnect();
-  }, [feed]);
+    return () => {
+      disconnect();
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [feed, debounceSave]);
 
   const quotes = useMemo<Quote[]>(
     () =>

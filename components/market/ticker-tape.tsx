@@ -1,17 +1,22 @@
 "use client";
 
-import { formatChange, formatPercent, formatPrice } from "@/lib/market/format";
+import { formatPercent, formatPrice } from "@/lib/market/format";
 import type { Quote } from "@/lib/market/types";
 import { changeTone } from "./tone";
 
 interface TickerTapeProps {
   quotes: Quote[];
+  onSymbolClick?: (symbol: string) => void;
 }
 
-function TapeItem({ quote }: { quote: Quote }) {
+function TapeItem({ quote, onClick }: { quote: Quote; onClick?: () => void }) {
   const tone = changeTone(quote.change);
   return (
-    <span className="inline-flex items-center gap-2 px-4 py-1.5 whitespace-nowrap">
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-2 px-4 py-1.5 whitespace-nowrap transition-colors hover:bg-panel-raised"
+    >
       <span className="tabular text-[0.7rem] font-medium tracking-wide text-ink-secondary">
         {quote.symbol}
       </span>
@@ -21,11 +26,11 @@ function TapeItem({ quote }: { quote: Quote }) {
       <span className={`tabular text-[0.7rem] ${tone}`}>
         {formatPercent(quote.changePercent)}
       </span>
-    </span>
+    </button>
   );
 }
 
-export function TickerTape({ quotes }: TickerTapeProps) {
+export function TickerTape({ quotes, onSymbolClick }: TickerTapeProps) {
   if (quotes.length === 0) return null;
 
   return (
@@ -35,10 +40,10 @@ export function TickerTape({ quotes }: TickerTapeProps) {
         style={{ "--ticker-duration": `${Math.max(20, quotes.length * 3)}s` } as React.CSSProperties}
       >
         {quotes.map((q) => (
-          <TapeItem key={`a-${q.symbol}`} quote={q} />
+          <TapeItem key={`a-${q.symbol}`} quote={q} onClick={() => onSymbolClick?.(q.symbol)} />
         ))}
         {quotes.map((q) => (
-          <TapeItem key={`b-${q.symbol}`} quote={q} />
+          <TapeItem key={`b-${q.symbol}`} quote={q} onClick={() => onSymbolClick?.(q.symbol)} />
         ))}
       </div>
     </div>

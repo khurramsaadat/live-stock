@@ -3,13 +3,15 @@ import type { Quote } from "@/lib/market/types";
 import { Sparkline } from "./sparkline";
 import { changeTone, directionLabel } from "./tone";
 
-export function IndexCard({ quote }: { quote: Quote }) {
+export function IndexCard({ quote, onClick }: { quote: Quote; onClick?: () => void }) {
   const direction = directionLabel(quote.change);
   const tone = changeTone(quote.change);
 
   return (
-    <article
-      className="flex flex-col gap-3 bg-panel px-5 py-5"
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col gap-3 bg-panel px-5 py-5 text-left transition-colors hover:bg-panel-raised"
       data-testid={`index-card-${quote.symbol}`}
       data-direction={direction}
     >
@@ -34,12 +36,12 @@ export function IndexCard({ quote }: { quote: Quote }) {
           </p>
         </div>
         <Sparkline
-          values={quote.history}
+          values={quote.history.length >= 2 ? quote.history : [quote.previousClose, quote.price]}
           width={80}
           height={32}
           className={`hidden shrink-0 sm:block ${tone}`}
         />
       </div>
-    </article>
+    </button>
   );
 }

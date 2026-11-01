@@ -12,6 +12,7 @@ type SortState = { key: SortKey; dir: "asc" | "desc" } | null;
 interface WatchlistTableProps {
   quotes: Quote[];
   onRemove: (symbol: string) => void;
+  onSymbolClick?: (symbol: string) => void;
 }
 
 function tickClass(quote: Quote): string {
@@ -65,7 +66,7 @@ function SortHeader({
   );
 }
 
-export function WatchlistTable({ quotes, onRemove }: WatchlistTableProps) {
+export function WatchlistTable({ quotes, onRemove, onSymbolClick }: WatchlistTableProps) {
   const [sort, setSort] = useState<SortState>(null);
 
   const handleSort = (key: SortKey) => {
@@ -142,12 +143,18 @@ export function WatchlistTable({ quotes, onRemove }: WatchlistTableProps) {
                   scope="row"
                   className="border-l-2 border-transparent py-3 pl-4 pr-4 font-normal transition-colors duration-150 group-hover:border-accent"
                 >
-                  <span className="tabular block text-[0.82rem] font-medium tracking-wide">
-                    {quote.symbol}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[0.72rem] text-ink-muted">
-                    {quote.name}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onSymbolClick?.(quote.symbol)}
+                    className="text-left transition-colors hover:text-accent"
+                  >
+                    <span className="tabular block text-[0.82rem] font-medium tracking-wide">
+                      {quote.symbol}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[0.72rem] text-ink-muted">
+                      {quote.name}
+                    </span>
+                  </button>
                 </th>
 
                 <td className={`hidden py-3 pr-4 md:table-cell ${tone}`}>
