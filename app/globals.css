@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
-/*
-  Light theme defaults. Dark theme overrides are defined via [data-theme="dark"]
-  below. The palette uses warm neutrals with amber and emerald accents;
-  no blue, indigo, or purple hues.
-*/
+/* Light theme defaults. Dark theme overrides are defined via [data-theme="dark"] below. The palette uses warm neutrals with amber and emerald accents; no blue, indigo, or purple hues. */
 @theme {
   --color-paper: #f5f3ef;
   --color-paper-raised: #fbfaf7;
@@ -219,3 +215,4 @@
   [data-theme="dark"] .eyebrow {
     color: var(--color-ink-muted);
   }
+}
