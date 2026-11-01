@@ -1,6 +1,6 @@
 "use client";
 
-export type TabId = "dashboard" | "watchlist" | "heatmap" | "charts";
+export type TabId = "dashboard" | "screener" | "watchlist" | "heatmap" | "charts";
 
 interface TabNavProps {
   active: TabId;
@@ -9,6 +9,7 @@ interface TabNavProps {
 
 const tabs: { id: TabId; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
+  { id: "screener", label: "Screener" },
   { id: "watchlist", label: "Watchlist" },
   { id: "heatmap", label: "Heatmap" },
   { id: "charts", label: "Charts" },
@@ -26,9 +27,9 @@ export function TabNav({ active, onChange }: TabNavProps) {
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
-            className={`rounded-full px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] transition-all duration-200 ${
+            className={`rounded-full px-4 py-2 text-[0.8rem] font-medium tracking-wide transition-all duration-200 ${
               isActive
-                ? "bg-accent text-ground font-medium"
+                ? "bg-accent text-ground"
                 : "text-ink-muted hover:text-ink hover:bg-panel-raised"
             }`}
           >

@@ -1,18 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Instrument_Sans, Instrument_Serif } from "next/font/google";
+import { Inter, IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -43,7 +41,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="dark"
-      className={`${instrumentSans.variable} ${instrumentSerif.variable} ${plexMono.variable} h-full`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${plexMono.variable} h-full`}
     >
       <body className="min-h-full antialiased">{children}</body>
     </html>

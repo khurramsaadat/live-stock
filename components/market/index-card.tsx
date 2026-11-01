@@ -16,7 +16,7 @@ export function IndexCard({ quote, onClick }: { quote: Quote; onClick?: () => vo
       data-direction={direction}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-mono text-3xs uppercase tracking-[0.16em] text-ink-muted">
+        <h2 className="text-[0.72rem] font-medium uppercase tracking-wide text-ink-muted">
           {quote.name}
         </h2>
         <span className="tabular text-3xs text-ink-muted">{quote.symbol}</span>

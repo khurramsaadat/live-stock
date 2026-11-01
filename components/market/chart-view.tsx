@@ -131,7 +131,7 @@ export function ChartView({ quotes, initialSymbol }: ChartViewProps) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-serif text-xl italic text-ink">
+            <h1 className="heading-lg text-ink">
               {selected?.name ?? "Charts"}
             </h1>
             {selected && (

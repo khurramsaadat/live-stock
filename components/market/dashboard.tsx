@@ -9,10 +9,12 @@ import type { FeedStatus, MarketSymbol, Quote } from "@/lib/market/types";
 import { AddSymbol } from "./add-symbol";
 import { BackToTop } from "./back-to-top";
 import { IndexCard } from "./index-card";
+import { Screener } from "./screener";
 import { SessionBadge } from "./session-badge";
 import { SessionClock } from "./session-clock";
 import { StatusPill } from "./status-pill";
 import { StockDetail } from "./stock-detail";
+import { StockIcon } from "./stock-icon";
 import { TabNav, type TabId } from "./tab-nav";
 import { TickerTape } from "./ticker-tape";
 import { WatchlistTable } from "./watchlist-table";
@@ -24,7 +26,11 @@ import { Sparkline } from "./sparkline";
 const reveal = (delay: number): CSSProperties =>
   ({ "--reveal-delay": `${delay}ms` }) as CSSProperties;
 
-export function Dashboard() {
+interface DashboardProps {
+  onBackToLanding?: () => void;
+}
+
+export function Dashboard({ onBackToLanding }: DashboardProps) {
   const watchlist = useWatchlist();
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -43,9 +49,10 @@ export function Dashboard() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setDetailSymbol(null);
       if (e.altKey && e.key === "1") { e.preventDefault(); setActiveTab("dashboard"); }
-      if (e.altKey && e.key === "2") { e.preventDefault(); setActiveTab("watchlist"); }
-      if (e.altKey && e.key === "3") { e.preventDefault(); setActiveTab("heatmap"); }
-      if (e.altKey && e.key === "4") { e.preventDefault(); setActiveTab("charts"); }
+      if (e.altKey && e.key === "2") { e.preventDefault(); setActiveTab("screener"); }
+      if (e.altKey && e.key === "3") { e.preventDefault(); setActiveTab("watchlist"); }
+      if (e.altKey && e.key === "4") { e.preventDefault(); setActiveTab("heatmap"); }
+      if (e.altKey && e.key === "5") { e.preventDefault(); setActiveTab("charts"); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -83,16 +90,20 @@ export function Dashboard() {
       <TickerTape quotes={allQuotes} onSymbolClick={goToChart} />
 
       {/* Header */}
-      <header className="flex items-center justify-between gap-4 px-6 py-3 sm:px-8">
+      <header className="flex items-center justify-between gap-4 border-b border-border px-6 py-3 sm:px-8">
         <div className="flex items-center gap-6">
           <button
             type="button"
-            onClick={() => setActiveTab("dashboard")}
+            onClick={onBackToLanding ?? (() => setActiveTab("dashboard"))}
             className="flex items-center gap-2.5"
           >
-            <span aria-hidden className="size-2 rounded-full bg-accent" />
-            <span className="font-serif text-lg leading-none tracking-tight text-ink">
-              Live Stocks
+            <div className="flex size-7 items-center justify-center rounded-md bg-accent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+            <span className="font-heading text-base font-bold tracking-tight text-ink">
+              LiveStocks
             </span>
           </button>
           <TabNav active={activeTab} onChange={setActiveTab} />
@@ -110,19 +121,17 @@ export function Dashboard() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex size-8 items-center justify-center rounded-full bg-panel-raised text-ink-muted transition-colors duration-150 hover:bg-accent hover:text-ground"
+            className="flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-panel-raised hover:text-ink"
             aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           >
             {theme === "dark" ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
             ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             )}
           </button>
         </div>
       </header>
-
-      <div aria-hidden className="h-px bg-border" />
 
       {/* Tab Content */}
       <main className="flex-1">
@@ -136,6 +145,9 @@ export function Dashboard() {
             detail={detail}
             lastUpdated={lastUpdated}
           />
+        )}
+        {activeTab === "screener" && (
+          <Screener quotes={watchQuotes} onSymbolClick={goToChart} />
         )}
         {activeTab === "watchlist" && (
           <WatchlistTab
@@ -161,13 +173,12 @@ export function Dashboard() {
       </main>
 
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-3 sm:px-8">
-        <span className="eyebrow">{feedKind} stream - not investment advice</span>
-        <span className="tabular text-3xs text-ink-muted">Updated {formatClock(lastUpdated)}</span>
+        <span className="text-[0.7rem] text-ink-muted">{feedKind} stream - not investment advice</span>
+        <span className="tabular text-[0.7rem] text-ink-muted">Updated {formatClock(lastUpdated)}</span>
       </footer>
 
       <BackToTop />
 
-      {/* Stock detail overlay */}
       {detailSymbol && (() => {
         const dq = allQuotes.find((q) => q.symbol === detailSymbol);
         if (!dq) return null;
@@ -226,70 +237,64 @@ function DashboardTab({
     <div className="p-6 sm:p-8">
       {/* Indices */}
       <section className="reveal" style={reveal(0)}>
-        <h1 className="font-serif text-xl italic text-ink">Market summary</h1>
-        <div className="mt-4 grid grid-cols-1 gap-px rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        <h1 className="heading-lg text-ink">Market Overview</h1>
+        <div className="mt-5 grid grid-cols-1 gap-px rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
           {indexQuotes.map((q) => (
             <IndexCard key={q.symbol} quote={q} onClick={() => onSymbolClick(q.symbol)} />
           ))}
         </div>
       </section>
 
-      {/* Two column grid */}
+      {/* Gainers and Losers */}
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        {/* Gainers */}
         <section className="reveal rounded-card border border-border bg-panel" style={reveal(60)}>
-          <div className="flex items-center justify-between border-b border-border px-5 py-3">
-            <h2 className="font-serif text-base italic">Top gainers</h2>
-            <span className="eyebrow">{gainers.length} advancing</span>
+          <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+            <h2 className="heading-sm text-ink">Top Gainers</h2>
+            <span className="text-[0.75rem] text-ink-muted">{gainers.length} advancing</span>
           </div>
           <StockList quotes={gainers} onSymbolClick={onSymbolClick} emptyText="No gainers today" />
         </section>
 
-        {/* Losers */}
         <section className="reveal rounded-card border border-border bg-panel" style={reveal(80)}>
-          <div className="flex items-center justify-between border-b border-border px-5 py-3">
-            <h2 className="font-serif text-base italic">Top losers</h2>
-            <span className="eyebrow">{losers.length} declining</span>
+          <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+            <h2 className="heading-sm text-ink">Top Losers</h2>
+            <span className="text-[0.75rem] text-ink-muted">{losers.length} declining</span>
           </div>
           <StockList quotes={losers} onSymbolClick={onSymbolClick} emptyText="No losers today" />
         </section>
       </div>
 
-      {/* Market breadth + Most active */}
+      {/* Most Active + Market Breadth */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Most active */}
         <section className="reveal rounded-card border border-border bg-panel" style={reveal(100)}>
-          <div className="flex items-center justify-between border-b border-border px-5 py-3">
-            <h2 className="font-serif text-base italic">Most active</h2>
-            <span className="eyebrow">{watchQuotes.length} tracked</span>
+          <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+            <h2 className="heading-sm text-ink">Most Active</h2>
+            <span className="text-[0.75rem] text-ink-muted">{watchQuotes.length} tracked</span>
           </div>
           <StockList quotes={mostActive.length > 0 ? mostActive : watchQuotes.slice(0, 5)} onSymbolClick={onSymbolClick} emptyText="No data yet" />
         </section>
 
-        {/* Market breadth card */}
         <section className="reveal rounded-card border border-border bg-panel p-5" style={reveal(120)}>
-          <h2 className="font-serif text-base italic">Market breadth</h2>
+          <h2 className="heading-sm text-ink">Market Breadth</h2>
 
-          {/* Advancing / Declining bar */}
           <div className="mt-5">
-            <div className="flex items-center justify-between text-3xs">
-              <span className="eyebrow">Advancing</span>
-              <span className="eyebrow">Declining</span>
+            <div className="flex items-center justify-between text-[0.72rem] text-ink-muted">
+              <span>Advancing</span>
+              <span>Declining</span>
             </div>
-            <div className="mt-2 flex h-2 w-full overflow-hidden rounded-full">
+            <div className="mt-2 flex h-2.5 w-full overflow-hidden rounded-full">
               <span className="bg-gain" style={{ width: `${(advancing.length / Math.max(1, watchQuotes.length)) * 100}%` }} />
               <span className="bg-ink-muted/20" style={{ width: `${(flat.length / Math.max(1, watchQuotes.length)) * 100}%` }} />
               <span className="bg-loss" style={{ width: `${(declining.length / Math.max(1, watchQuotes.length)) * 100}%` }} />
             </div>
             <div className="mt-2 flex items-center justify-between">
-              <span className="tabular text-[0.7rem] text-gain">{advancing.length} - {Math.round((advancing.length / Math.max(1, watchQuotes.length)) * 100)}%</span>
-              <span className="tabular text-[0.7rem] text-loss">{declining.length} - {Math.round((declining.length / Math.max(1, watchQuotes.length)) * 100)}%</span>
+              <span className="tabular text-[0.75rem] text-gain">{advancing.length} - {Math.round((advancing.length / Math.max(1, watchQuotes.length)) * 100)}%</span>
+              <span className="tabular text-[0.75rem] text-loss">{declining.length} - {Math.round((declining.length / Math.max(1, watchQuotes.length)) * 100)}%</span>
             </div>
           </div>
 
-          {/* Performance bars */}
           <div className="mt-6">
-            <p className="eyebrow">Performance spread</p>
+            <p className="text-[0.72rem] font-medium uppercase tracking-wide text-ink-muted">Performance Spread</p>
             <ul className="mt-3 space-y-2.5">
               {sorted.slice(0, 6).map((q) => {
                 const barWidth = Math.min(100, Math.abs(q.changePercent) * 5);
@@ -298,7 +303,7 @@ function DashboardTab({
                     <button
                       type="button"
                       onClick={() => onSymbolClick(q.symbol)}
-                      className="w-14 text-left tabular text-[0.72rem] font-medium hover:text-accent transition-colors"
+                      className="w-14 text-left text-[0.78rem] font-semibold hover:text-accent transition-colors"
                     >
                       {q.symbol}
                     </button>
@@ -309,7 +314,7 @@ function DashboardTab({
                         <div className="h-full bg-loss rounded-full ml-auto" style={{ width: `${barWidth}%` }} />
                       )}
                     </div>
-                    <span className={`tabular text-[0.7rem] w-14 text-right ${changeTone(q.change)}`}>
+                    <span className={`tabular text-[0.75rem] w-16 text-right font-medium ${changeTone(q.change)}`}>
                       {formatPercent(q.changePercent)}
                     </span>
                   </li>
@@ -318,10 +323,9 @@ function DashboardTab({
             </ul>
           </div>
 
-          {/* Stream info */}
           <div className="mt-6 border-t border-border pt-4">
-            <p className="eyebrow">Stream</p>
-            <dl className="tabular mt-2 space-y-1 text-3xs text-ink-muted">
+            <p className="text-[0.72rem] font-medium uppercase tracking-wide text-ink-muted">Stream</p>
+            <dl className="tabular mt-2 space-y-1 text-[0.75rem] text-ink-muted">
               <div className="flex justify-between gap-3">
                 <dt>Adapter</dt>
                 <dd className="text-ink-secondary">{feedKind}</dd>
@@ -339,7 +343,7 @@ function DashboardTab({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stock List (reusable for gainers, losers, most active)             */
+/*  Stock List                                                         */
 /* ------------------------------------------------------------------ */
 
 function StockList({
@@ -352,7 +356,7 @@ function StockList({
   emptyText: string;
 }) {
   if (quotes.length === 0) {
-    return <p className="px-5 py-6 text-[0.78rem] text-ink-muted">{emptyText}</p>;
+    return <p className="px-5 py-8 text-sm text-ink-muted">{emptyText}</p>;
   }
 
   return (
@@ -362,11 +366,12 @@ function StockList({
           <button
             type="button"
             onClick={() => onSymbolClick(q.symbol)}
-            className="group flex w-full items-center gap-4 border-b border-border px-5 py-3 transition-colors duration-100 hover:bg-panel-raised"
+            className="group flex w-full items-center gap-4 border-b border-border px-5 py-3.5 transition-colors duration-100 hover:bg-panel-raised"
           >
+            <StockIcon symbol={q.symbol} size={32} />
             <div className="flex-1 min-w-0 text-left">
-              <span className="tabular text-[0.82rem] font-medium group-hover:text-accent transition-colors">{q.symbol}</span>
-              <span className="ml-2 text-[0.72rem] text-ink-muted truncate">{q.name}</span>
+              <span className="text-[0.88rem] font-semibold group-hover:text-accent transition-colors">{q.symbol}</span>
+              <span className="ml-2 text-[0.78rem] text-ink-muted truncate">{q.name}</span>
             </div>
             <Sparkline
               values={q.history.length >= 2 ? q.history : [q.previousClose, q.price]}
@@ -374,8 +379,8 @@ function StockList({
               height={20}
               className={`shrink-0 ${changeTone(q.change)}`}
             />
-            <span className="tabular w-20 text-right text-[0.82rem]">{formatPrice(q.price)}</span>
-            <span className={`tabular w-16 text-right text-[0.78rem] font-medium ${changeTone(q.change)}`}>
+            <span className="tabular w-20 text-right text-[0.88rem] font-medium">{formatPrice(q.price)}</span>
+            <span className={`tabular w-18 text-right text-[0.82rem] font-semibold ${changeTone(q.change)}`}>
               {formatPercent(q.changePercent)}
             </span>
           </button>
@@ -404,8 +409,8 @@ function WatchlistTab({
     <div className="p-6 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-baseline gap-3">
-          <h1 className="font-serif text-xl italic text-ink">Watchlist</h1>
-          <span className="tabular text-3xs text-ink-muted">{watchQuotes.length} tracked</span>
+          <h1 className="heading-lg text-ink">Watchlist</h1>
+          <span className="text-[0.8rem] text-ink-muted">{watchQuotes.length} tracked</span>
         </div>
         <AddSymbol available={watchlist.available} onAdd={watchlist.add} />
       </div>
@@ -418,11 +423,11 @@ function WatchlistTab({
         <button
           type="button"
           onClick={watchlist.reset}
-          className="rounded-full border border-border px-3 py-1 font-mono text-3xs uppercase tracking-[0.14em] text-ink-muted transition-colors duration-200 hover:border-accent hover:text-accent"
+          className="rounded-full border border-border px-4 py-2 text-[0.78rem] font-medium text-ink-muted transition-colors duration-200 hover:border-accent hover:text-accent"
         >
           Reset to default
         </button>
-        <p className="tabular text-3xs text-ink-muted">Updated {formatClock(lastUpdated)}</p>
+        <p className="tabular text-[0.75rem] text-ink-muted">Updated {formatClock(lastUpdated)}</p>
       </div>
     </div>
   );

@@ -134,7 +134,7 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
 
   return (
     <div>
-      <h1 className="font-serif text-xl italic text-ink">Performance Heatmap</h1>
+      <h1 className="heading-lg text-ink">Performance Heatmap</h1>
       <p className="mt-1 text-[0.78rem] text-ink-muted">
         Tile size represents relative weight. Color indicates daily change.
       </p>
