@@ -220,6 +220,21 @@
     to { opacity: 1; transform: none; }
   }
 
+  /* Logo marquee scroll */
+  .logo-scroll {
+    overflow: hidden;
+  }
+  .logo-scroll-track {
+    animation: logo-slide 40s linear infinite;
+  }
+  @keyframes logo-slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  .logo-scroll:hover .logo-scroll-track {
+    animation-play-state: paused;
+  }
+
   /* Hero gradient */
   .hero-gradient {
     background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(204, 255, 0, 0.08) 0%, transparent 70%);
@@ -230,7 +245,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal, .spark-path, .tick-up, .tick-down, .live-dot, .ticker-scroll, .animate-in, .breathe {
+    .reveal, .spark-path, .tick-up, .tick-down, .live-dot, .ticker-scroll, .logo-scroll-track, .animate-in, .breathe {
       animation: none;
     }
     .spark-path { stroke-dashoffset: 0; }

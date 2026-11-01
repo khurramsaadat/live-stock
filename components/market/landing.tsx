@@ -324,23 +324,11 @@ export function Landing({ onLaunch }: LandingProps) {
         </section>
 
         {/* Logos/stocks banner */}
-        <section className="border-y border-border bg-panel py-10">
-          <div className="mx-auto max-w-6xl px-6">
-            <p className="mb-6 text-center text-[0.8rem] font-medium uppercase tracking-wide text-ink-muted">
-              Tracking the world's biggest companies
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-6 opacity-60">
-              {[
-                "/logos/apple.svg", "/logos/nvidia.svg", "/logos/microsoft.svg",
-                "/logos/alphabet.svg", "/logos/amazon.svg", "/logos/meta-platforms.svg",
-                "/logos/tesla.svg", "/logos/jpmorgan-chase.svg", "/logos/visa.svg",
-                "/logos/walmart.svg", "/logos/coca-cola.svg", "/logos/disney.svg",
-                "/logos/boeing.svg", "/logos/pfizer.svg", "/logos/uber.svg",
-              ].map((logo) => (
-                <img key={logo} src={logo} alt="" width={28} height={28} className="object-contain" loading="lazy" />
-              ))}
-            </div>
-          </div>
+        <section className="border-y border-border bg-panel py-10 overflow-hidden">
+          <p className="mb-8 text-center text-[0.8rem] font-medium uppercase tracking-widest text-ink-muted">
+            Tracking the world&apos;s biggest companies
+          </p>
+          <LogoMarquee />
         </section>
 
         {/* FAQ */}
@@ -517,6 +505,67 @@ export function Landing({ onLaunch }: LandingProps) {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+const MARQUEE_LOGOS = [
+  "/logos/apple.svg",
+  "/logos/nvidia.svg",
+  "/logos/microsoft.svg",
+  "/logos/alphabet.svg",
+  "/logos/amazon.svg",
+  "/logos/meta-platforms.svg",
+  "/logos/tesla.svg",
+  "/logos/jpmorgan-chase.svg",
+  "/logos/visa.svg",
+  "/logos/walmart.svg",
+  "/logos/coca-cola.svg",
+  "/logos/disney.svg",
+  "/logos/boeing.svg",
+  "/logos/pfizer.svg",
+  "/logos/uber.svg",
+  "/logos/netflix.svg",
+  "/logos/mastercard.svg",
+  "/logos/salesforce.svg",
+  "/logos/adobe.svg",
+  "/logos/oracle.svg",
+  "/logos/eli-lilly.svg",
+  "/logos/broadcom.svg",
+  "/logos/goldman-sachs.svg",
+  "/logos/costco-wholesale.svg",
+  "/logos/home-depot.svg",
+  "/logos/caterpillar.svg",
+  "/logos/nike.svg",
+  "/logos/starbucks.svg",
+  "/logos/paypal.svg",
+  "/logos/crowdstrike.svg",
+];
+
+function LogoMarquee() {
+  return (
+    <div className="relative">
+      {/* Fade edges */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-panel to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-panel to-transparent" />
+
+      <div className="flex gap-12 logo-scroll">
+        {[0, 1].map((copy) => (
+          <div key={copy} className="flex shrink-0 items-center gap-12 logo-scroll-track" aria-hidden={copy === 1}>
+            {MARQUEE_LOGOS.map((logo) => (
+              <img
+                key={`${copy}-${logo}`}
+                src={logo}
+                alt=""
+                width={44}
+                height={44}
+                className="shrink-0 object-contain opacity-70 transition-opacity duration-200 hover:opacity-100"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
