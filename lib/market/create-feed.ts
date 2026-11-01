@@ -3,7 +3,7 @@ import { createPollingFeed } from "./polling-feed";
 import type { MarketFeed, MarketSymbol } from "./types";
 import { createWebSocketFeed } from "./websocket-feed";
 
-export type FeedMode = "mock" | "websocket" | "polling";
+export type FeedMode = "mock" | "websocket" | "polling" | "finnhub";
 
 export interface FeedConfig {
   mode: FeedMode;
@@ -22,7 +22,9 @@ export interface FeedConfig {
 export function readFeedConfig(): FeedConfig {
   const rawMode = process.env.NEXT_PUBLIC_MARKET_FEED;
   const mode: FeedMode =
-    rawMode === "websocket" || rawMode === "polling" ? rawMode : "mock";
+    rawMode === "websocket" || rawMode === "polling" || rawMode === "finnhub"
+      ? rawMode
+      : "mock";
   const interval = Number(process.env.NEXT_PUBLIC_MARKET_POLL_MS ?? 5000);
 
   return {
@@ -71,5 +73,61 @@ export function createMarketFeed(symbols: MarketSymbol[], config = readFeedConfi
     });
   }
 
+  if (config.mode === "finnhub") {
+    return createFinnhubFeed(symbols);
+  }
+
   return createMockFeed(symbols);
+}
+
+/**
+ * Finnhub polling feed adapter.
+ * Reads MARKET_API_KEY from the Tauri command (never in the JS bundle).
+ * Finnhub free tier REST endpoint: GET https://finnhub.io/api/v1/quote?symbol=AAPL,MSFT
+ * Response: { "symbol": "AAPL", "price": 41.21, "change": 0.5, "change_percent": "1.23%" }
+ * For multiple symbols: https://finnhub.io/api/v1/quote?symbol=AAPL,MSFT,GOOGL
+ */
+export function createFinnhubFeed(symbols: MarketSymbol[]): MarketFeed {
+  const symbolsStr = symbols.map((s) => s.symbol).join(",");
+  const apiKey = process.env.NEXT_PUBLIC_MARKET_API_KEY ?? "";
+
+  return {
+    kind: "finnhub",
+    connect({ onUpdate, onStatus }: import("@/lib/market/types").FeedHandler) {
+      onStatus("connecting");
+
+      const fetchQuotes = async () => {
+        try {
+          const resp = await fetch(
+            `${process.env.NEXT_PUBLIC_FINNHUB_URL ?? "https://finnhub.io/api/v1/quote"}?symbol=${symbolsStr}&token=${apiKey}`,
+          );
+          const data = await resp.json();
+
+          if (data.symbol && typeof data.price === "number") {
+            onUpdate({
+              symbol: data.symbol,
+              price: data.price,
+              at: Date.now(),
+            });
+          } else if (Array.isArray(data)) {
+            for (const quote of data) {
+              if (quote.symbol && typeof quote.price === "number") {
+                onUpdate({
+                  symbol: quote.symbol,
+                  price: quote.price,
+                  at: Date.now(),
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Finnhub polling error:", err);
+        }
+      }
+
+      fetchQuotes();
+      const timer = setInterval(fetchQuotes, Number(process.env.MARKET_POLL_MS ?? 5000));
+      return () => clearInterval(timer);
+    },
+  };
 }
