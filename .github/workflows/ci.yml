@@ -1,0 +1,70 @@
+name: Continuous Integration
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Vitest tests
+        run: npm test
+
+      - name: Tauri build
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run tauri build -- --debug
+
+      - name: Create GitHub Release
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: |
+            src-tauri/target/debug/Live\ Stocks Setup 1440x900.exe
+            src-tauri/target/debug/app-*.exe
+          body: |
+            ### Tauri Auto-Update Release
+
+            This release was built and published automatically by the CI/CD pipeline.
+
+            ### What's New
+            - Live Stocks desktop application v${{ github.ref_name }}
+            - Auto-updater enabled: users will be prompted to update on app startup
+
+            ### Installation
+            Download the `.exe` from the assets above and run it to install.
+
+            ### Auto-Update Notes
+            The Tauri auto-updater checks `https://github.com/khurramsaadat/live-stock/releases/download` for new versions.
+            On first launch after updating, users will be prompted to restart the application.

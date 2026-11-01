@@ -7,7 +7,15 @@
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build",
+    "updater": {
+      "beforeUpdate": async (details) => {
+        console.log("New version available: " + details.version);
+        console.log("Release notes: " + details.releaseNotes);
+      },
+      "updateUrl": "https://github.com/khurramsaadat/live-stock/releases/download",
+      "pubUrl": "https://github.com/khurramsaadat/live-stock/releases/download"
+    }
   },
   "app": {
     "windows": [
@@ -28,12 +36,26 @@
       "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost https: wss:"
     },
     "plugins": {
-      "shell": {}
+      "shell": {},
+      "updater": {}
     }
   },
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "installer": {
+      "displayName": "Live Stocks",
+      "path": "live-stocks-setup.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icons/256x256.png",
+      "uninstallerIcon": "icons/256x256.png",
+      "uninstallerDisplayName": "Live Stocks",
+      "displayName": "Live Stocks",
+      "modifyPath": false
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
