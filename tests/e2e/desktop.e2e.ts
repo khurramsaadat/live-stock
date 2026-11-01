@@ -74,7 +74,10 @@ describe("Live Stocks desktop window", () => {
   });
 
   it("carries the data disclaimer", async () => {
-    const footer = await $("footer").getText();
+    // The footer labels are uppercased by CSS, and WebDriver reports rendered
+    // text, so compare without case.
+    const footer = (await $("footer").getText()).toLowerCase();
     expect(footer).toContain("not investment advice");
+    expect(footer).toContain("simulated data");
   });
 });
