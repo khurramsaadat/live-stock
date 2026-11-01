@@ -148,7 +148,7 @@ function getSectorForSymbol(symbol: string): Sector | null {
 
 export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
   const [hovered, setHovered] = useState<string | null>(null);
-  const [groupBySector, setGroupBySector] = useState(true);
+  const [activeSectors, setActiveSectors] = useState<Set<Sector>>(new Set());
 
   const WIDTH = 960;
   const HEIGHT = 560;
@@ -166,7 +166,27 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
     return map;
   }, [quotes]);
 
-  const rects = useMemo(() => squarify(quotes, WIDTH, HEIGHT), [quotes]);
+  const filteredQuotes = useMemo(() => {
+    if (activeSectors.size === 0) return quotes;
+    return quotes.filter((q) => {
+      const sector = getSectorForSymbol(q.symbol);
+      return sector !== null && activeSectors.has(sector);
+    });
+  }, [quotes, activeSectors]);
+
+  const toggleSector = (sector: Sector) => {
+    setActiveSectors((prev) => {
+      const next = new Set(prev);
+      if (next.has(sector)) {
+        next.delete(sector);
+      } else {
+        next.add(sector);
+      }
+      return next;
+    });
+  };
+
+  const rects = useMemo(() => squarify(filteredQuotes, WIDTH, HEIGHT), [filteredQuotes]);
 
   return (
     <div>
@@ -174,42 +194,59 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
         <div>
           <h1 className="heading-lg text-ink">Performance Heatmap</h1>
           <p className="mt-1 text-[0.78rem] text-ink-muted">
-            {quotes.length} stocks - tile size represents relative weight, color indicates daily change
+            {activeSectors.size > 0
+              ? `${filteredQuotes.length} of ${quotes.length} stocks - filtered by ${activeSectors.size} sector${activeSectors.size > 1 ? "s" : ""}`
+              : `${quotes.length} stocks - click a sector below to filter`}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setGroupBySector(!groupBySector)}
-          className={`rounded-full border px-3.5 py-1.5 text-[0.72rem] font-medium transition-colors ${
-            groupBySector
-              ? "border-accent/30 bg-accent/10 text-accent"
-              : "border-border text-ink-muted hover:text-ink"
-          }`}
-        >
-          Sector labels {groupBySector ? "ON" : "OFF"}
-        </button>
+        {activeSectors.size > 0 && (
+          <button
+            type="button"
+            onClick={() => setActiveSectors(new Set())}
+            className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-[0.72rem] font-medium text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Clear filters
+          </button>
+        )}
       </div>
 
-      {/* Sector legend */}
+      {/* Sector filters */}
       <div className="mt-4 flex flex-wrap gap-2">
         {Array.from(sectorStats.entries())
           .sort((a, b) => b[1].count - a[1].count)
           .map(([sector, stats]) => {
             const avgChange = stats.totalChange / stats.count;
+            const isActive = activeSectors.has(sector);
+            const isFiltering = activeSectors.size > 0;
             return (
-              <span
+              <button
                 key={sector}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-panel px-2.5 py-1 text-[0.68rem]"
+                type="button"
+                onClick={() => toggleSector(sector)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.68rem] transition-all duration-150 ${
+                  isActive
+                    ? "border-accent/40 bg-accent/15 shadow-sm"
+                    : isFiltering
+                      ? "border-border/50 bg-panel opacity-50 hover:opacity-80"
+                      : "border-border bg-panel hover:border-border-strong"
+                }`}
               >
                 <span
-                  className="size-2 rounded-full"
-                  style={{ backgroundColor: SECTOR_COLORS[sector] }}
+                  className="size-2 rounded-full transition-transform duration-150"
+                  style={{
+                    backgroundColor: SECTOR_COLORS[sector],
+                    transform: isActive ? "scale(1.3)" : "scale(1)",
+                  }}
                 />
-                <span className="font-medium text-ink-muted">{sector}</span>
+                <span className={`font-medium ${isActive ? "text-ink" : "text-ink-muted"}`}>{sector}</span>
+                <span className="text-[0.62rem] text-ink-muted">{stats.count}</span>
                 <span className={`tabular font-semibold ${avgChange >= 0 ? "text-gain" : "text-loss"}`}>
                   {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(2)}%
                 </span>
-              </span>
+              </button>
             );
           })}
       </div>
@@ -251,16 +288,16 @@ export function Heatmap({ quotes, onSymbolClick }: HeatmapProps) {
                   strokeWidth={isHovered ? 2 : 0.5}
                 />
 
-                {/* Sector border indicator */}
-                {groupBySector && sector && rect.w > 40 && rect.h > 30 && (
+                {/* Sector indicator dot */}
+                {sector && rect.w > 40 && rect.h > 30 && (
                   <rect
-                    x={rect.x + 2}
-                    y={rect.y + 2}
+                    x={rect.x + 4}
+                    y={rect.y + 4}
                     width={8}
                     height={3}
                     rx={1.5}
                     fill={SECTOR_COLORS[sector]}
-                    opacity={0.8}
+                    opacity={0.85}
                   />
                 )}
 
