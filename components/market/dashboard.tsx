@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatClock } from "@/lib/market/format";
 import { findSymbol, INDICES } from "@/lib/market/universe";
 import { useMarketFeed } from "@/lib/market/use-market-feed";
@@ -20,8 +20,17 @@ const reveal = (delay: number): CSSProperties =>
 export function Dashboard() {
   const watchlist = useWatchlist();
   const [theme, setTheme] = useState<'day' | 'dark'>('day');
-  const toggleTheme = () => setTheme((prev) => (prev === 'day' ? 'dark' : 'day'));
-  // theme persistence is handled locally via the toggle; initial state is 'day'
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'day' ? 'dark' : 'day'));
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'day');
+  };
+  // persist theme in localStorage across sessions
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored) {
+      document.documentElement.setAttribute('data-theme', stored);
+    }
+  }, []);
   const tracked = useMemo<MarketSymbol[]>(() => {
     const watchSymbols = watchlist.symbols
       .map((symbol) => findSymbol(symbol))
