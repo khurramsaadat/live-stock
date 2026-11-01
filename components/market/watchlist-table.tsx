@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { formatChange, formatPercent, formatPrice } from "@/lib/market/format";
 import type { Quote } from "@/lib/market/types";
 import { Sparkline } from "./sparkline";
+import { StockIcon } from "./stock-icon";
 import { changeTone, directionLabel } from "./tone";
 
 type SortKey = "symbol" | "price" | "change" | "changePercent";
@@ -101,13 +102,16 @@ export function WatchlistTable({ quotes, onRemove, onSymbolClick }: WatchlistTab
       <table className="w-full border-collapse text-left" data-testid="watchlist-table">
         <thead>
           <tr className="border-b border-border bg-panel-sunken">
+            <th scope="col" className="w-12 py-3 pl-4">
+              <span className="sr-only">Icon</span>
+            </th>
             <SortHeader
               column="symbol"
               label="Symbol"
               sort={sort}
               onSort={handleSort}
               align="text-left"
-              className="w-[38%] pl-4"
+              className="w-[32%]"
             />
             <th scope="col" className="eyebrow hidden py-3 font-normal md:table-cell">
               Intraday
@@ -139,9 +143,12 @@ export function WatchlistTable({ quotes, onRemove, onSymbolClick }: WatchlistTab
                 data-testid={`row-${quote.symbol}`}
                 data-direction={direction}
               >
+                <td className="border-l-2 border-transparent py-3 pl-4 pr-1 transition-colors duration-150 group-hover:border-accent">
+                  <StockIcon symbol={quote.symbol} size={30} />
+                </td>
                 <th
                   scope="row"
-                  className="border-l-2 border-transparent py-3 pl-4 pr-4 font-normal transition-colors duration-150 group-hover:border-accent"
+                  className="py-3 pr-4 font-normal"
                 >
                   <button
                     type="button"

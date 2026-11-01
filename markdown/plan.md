@@ -127,6 +127,37 @@ A premium dark stock dashboard inspired by Robinhood's visual identity and Tradi
 - Small elements: 6px radius
 
 ### Stock Icons
-- Colored circle with first letter of symbol
-- Brand-specific colors for major stocks (AAPL gray, NVDA green, MSFT blue, etc.)
-- Hash-based color for unknown symbols
+- Real SVG logos from TradingView's CDN stored locally in `/public/logos/`
+- Logo mapping: AAPL=apple, NVDA=nvidia, MSFT=microsoft, GOOGL=alphabet, AMZN=amazon, META=meta-platforms, NFLX=netflix, AMD=advanced-micro-devices, INTC=intel, ORCL=oracle, IBM=international-bus-mach, TSLA=tesla
+- Fallback to colored circle with first letter for symbols without logos
+- TradingView logo CDN pattern: `https://s3-symbol-logo.tradingview.com/{company-slug}.svg`
+
+---
+
+## TradingView Reference Notes
+
+### Screener View Types (from TradingView Screener)
+TradingView's screener has a **VIEW TYPE** dropdown with 3 modes:
+1. **Table** (grid icon) - Default view, data table with sortable columns
+2. **Charts** (line icon) - Shows interactive chart for selected stock
+3. **Heatmap** (squares icon) - Shows treemap heatmap visualization
+
+Our screener implements all 3 view types with the same switcher pattern.
+
+### Screener Table Tabs (from TradingView)
+TradingView's table has sub-tabs that change which columns are visible:
+- Overview (default), Performance, Technicals, Extended hours, Forecasts, Valuation, Dividends, Profitability, Income statement, Balance sheet, Cash flow, Per share
+
+### Screener Filter Buttons (from TradingView)
+TradingView has filter pill buttons across the top:
+- AI, Country (US), Watchlist, Index, Price, Chg%, Mkt cap, P/E, EPS dil growth, Div yield%, Sector, Analyst rating, Perf%, Revenue growth, PEG, ROE, Beta, Recent earnings date, Upcoming earnings date, + Add new filter
+
+### Heatmap Controls (from TradingView)
+TradingView heatmap has these controls:
+- **Source**: S&P 500 Index, etc.
+- **Size by**: Market cap
+- **Color by**: Change 1D %
+- **Group by**: Sector
+- Each tile shows the company logo, symbol, and change %
+- Tiles are grouped by sector with sector labels
+- Color gradient from deep red (-6.75%) to deep green (+6.75%)
