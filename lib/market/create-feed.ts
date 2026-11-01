@@ -3,7 +3,7 @@ import { createPollingFeed } from "./polling-feed";
 import type { MarketFeed, MarketSymbol } from "./types";
 import { createWebSocketFeed } from "./websocket-feed";
 
-export type FeedMode = "mock" | "websocket" | "polling" | "finnhub";
+export type FeedMode = "mock" | "websocket" | "polling" | "finnhub" | "twelvedata";
 
 export interface FeedConfig {
   mode: FeedMode;
@@ -22,7 +22,7 @@ export interface FeedConfig {
 export function readFeedConfig(): FeedConfig {
   const rawMode = process.env.NEXT_PUBLIC_MARKET_FEED;
   const mode: FeedMode =
-    rawMode === "websocket" || rawMode === "polling" || rawMode === "finnhub"
+    rawMode === "websocket" || rawMode === "polling" || rawMode === "finnhub" || rawMode === "twelvedata"
       ? rawMode
       : "mock";
   const interval = Number(process.env.NEXT_PUBLIC_MARKET_POLL_MS ?? 5000);
@@ -77,6 +77,10 @@ export function createMarketFeed(symbols: MarketSymbol[], config = readFeedConfi
     return createFinnhubFeed(symbols);
   }
 
+  if (config.mode === "twelvedata") {
+    return createTwelvedataFeed(symbols);
+  }
+
   return createMockFeed(symbols);
 }
 
@@ -122,6 +126,52 @@ export function createFinnhubFeed(symbols: MarketSymbol[]): MarketFeed {
           }
         } catch (err) {
           console.error("Finnhub polling error:", err);
+        }
+      }
+
+      fetchQuotes();
+      const timer = setInterval(fetchQuotes, Number(process.env.MARKET_POLL_MS ?? 5000));
+      return () => clearInterval(timer);
+    },
+  };
+}
+
+/**
+ * Twelvedata polling feed adapter.
+ * Twelvedata free tier REST endpoint: GET https://api.twelvedata.com/quote?symbol=AAPL,MSFT&apikey=YOUR_KEY
+ * Response: { "symbol": "AAPL", "price": 41.21, "change": 0.5, "change_percent": "1.23%" }
+ * For multiple symbols: https://api.twelvedata.com/quote?symbol=AAPL,MSFT,GOOGL&apikey=YOUR_KEY
+ */
+export function createTwelvedataFeed(symbols: MarketSymbol[]): MarketFeed {
+  const apiKey = process.env.NEXT_PUBLIC_TWELVEDATA_KEY ?? "";
+  const symbolsStr = symbols.map((s) => s.symbol).join(",");
+
+  return {
+    kind: "twelvedata",
+    connect({ onUpdate, onStatus }: import("@/lib/market/types").FeedHandler) {
+      onStatus("connecting");
+
+      const fetchQuotes = async () => {
+        try {
+          const resp = await fetch(
+            `${process.env.TWELVEDATA_POLL_URL ?? "https://api.twelvedata.com/quote"}?symbol=${symbolsStr}&apikey=${apiKey}`,
+          );
+          const data = await resp.json();
+
+          // Twelvedata returns single object or array
+          const quotes = Array.isArray(data) ? data : (data.symbol ? [data] : []);
+
+          for (const quote of quotes) {
+            if (quote.symbol && typeof quote.price === "number") {
+              onUpdate({
+                symbol: quote.symbol,
+                price: quote.price,
+                at: Date.now(),
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Twelvedata polling error:", err);
         }
       }
 
