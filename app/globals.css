@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 /*
-  Daylight only. The palette is warm neutrals with amber and emerald, and no
-  blue or violet hues are allowed anywhere in the system.
+  Light theme defaults. Dark theme overrides are defined via [data-theme="dark"]
+  below. The palette uses warm neutrals with amber and emerald accents;
+  no blue, indigo, or purple hues.
 */
 @theme {
   --color-paper: #f5f3ef;
@@ -35,7 +36,7 @@
 
 @layer base {
   :root {
-    color-scheme: light only;
+    color-scheme: light dark;
   }
 
   html,
@@ -192,4 +193,29 @@
       stroke-dashoffset: 0;
     }
   }
-}
+
+  /* Dark mode overrides */
+  [data-theme="dark"] {
+    --color-paper: #16150f;
+    --color-paper-raised: #1e1d18;
+    --color-paper-sunken: #2a2722;
+    --color-ink: #f4f1ec;
+    --color-ink-soft: #6b6658;
+    --color-ink-muted: #a8a29e;
+    --color-rule: #3f3a35;
+    --color-rule-strong: #33302c;
+    --color-amber: #ffa41b;
+    --color-amber-quiet: #ffecd2;
+    --color-emerald: #38bdf8;
+    --color-emerald-quiet: #10b981;
+    --color-rust: #bc6b4e;
+    --color-rust-quiet: #fcd3b3;
+  }
+
+  [data-theme="dark"] .tabular {
+    color: var(--color-ink);
+  }
+
+  [data-theme="dark"] .eyebrow {
+    color: var(--color-ink-muted);
+  }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { formatClock } from "@/lib/market/format";
 import { findSymbol, INDICES } from "@/lib/market/universe";
 import { useMarketFeed } from "@/lib/market/use-market-feed";
@@ -19,7 +19,9 @@ const reveal = (delay: number): CSSProperties =>
 
 export function Dashboard() {
   const watchlist = useWatchlist();
-
+  const [theme, setTheme] = useState<'day' | 'dark'>('day');
+  const toggleTheme = () => setTheme((prev) => (prev === 'day' ? 'dark' : 'day'));
+  // theme persistence is handled locally via the toggle; initial state is 'day'
   const tracked = useMemo<MarketSymbol[]>(() => {
     const watchSymbols = watchlist.symbols
       .map((symbol) => findSymbol(symbol))
@@ -55,6 +57,15 @@ export function Dashboard() {
           </div>
           <span aria-hidden className="hidden h-7 w-px bg-rule sm:block" />
           <SessionBadge />
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="rounded-md bg-amber/10 px-2 py-0.5 text-2xs text-amber hover:bg-amber focus-visible:bg-amber focus-visible:text-ink disabled:opacity-40 transition-colors duration-150"
+            aria-label={theme === 'day' ? 'Switch to day theme' : 'Switch to dark theme'}
+            title={theme === 'day' ? 'Switch to day theme' : 'Switch to dark theme'}
+          >
+            {theme === 'day' ? '☀' : '☽'}
+          </button>
           <span aria-hidden className="h-7 w-px bg-rule" />
           <StatusPill status={status} detail={detail} />
         </div>
@@ -135,7 +146,7 @@ export function Dashboard() {
             ? "Simulated data · not investment advice"
             : `${feedKind} stream · not investment advice`}
         </span>
-        <span className="eyebrow">Daylight theme</span>
+        <span className="eyebrow">{theme === 'day' ? 'Daylight' : 'Dark'} theme</span>
         <span className="tabular text-3xs text-ink-muted">v0.1.0</span>
       </footer>
     </div>
